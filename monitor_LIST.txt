@@ -1,0 +1,243 @@
+These are the current monitoring configurations:
+
+base_<ol7/sunos>_<env>
+	Basic OS monitoring of logs, files and directories.
+
+db_<env>
+	Scripts & filepaths related to Oracle Database log monitoring.
+
+metrics_<ol7/sunos>_<env>
+	Scripts for gathering and sending OS metrics data.
+
+wls_<admin/man>_<env>_<domain>_(<dev/tst>)
+	Scripts & filepaths related to WebLogic monitoring.
+
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ base_
+=== +++ (both ol7 & sunos)
+=== === === +++
+=== ===
+=== +++
++++
+
+[monitor:///var/log/syslog]
+
+[monitor:///var/log/daemon.log]
+
+[monitor:///var/log/auth.log]
+
+[monitor:///var/log/apache/access.log]
+
+[monitor:///var/log/apache/error.log]
+
+[monitor:///opt/splunkforwarder/var/log/splunk/*.log]
+
+[monitor:///etc/collectd/collectd.log]
+
+[script://./bin/vmstat.sh]
+
+[script://./bin/iostat.sh]
+
+[script://./bin/nfsiostat.sh]
+
+[script://./bin/ps.sh]
+
+[script://./bin/top.sh]
+
+[script://./bin/netstat.sh]
+
+[script://./bin/bandwidth.sh]
+
+[script://./bin/protocol.sh]
+
+[script://./bin/openPorts.sh]
+
+[script://./bin/time.sh]
+
+[script://./bin/lsof.sh]
+
+[script://./bin/df.sh]
+
+[script://./bin/who.sh]
+
+[script://./bin/usersWithLoginPrivs.sh]
+
+[script://./bin/lastlog.sh]
+
+[script://./bin/interfaces.sh]
+
+[script://./bin/cpu.sh]
+
+[script://./bin/rlog.sh]
+
+[script://./bin/package.sh]
+
+[script://./bin/hardware.sh]
+
+[monitor:///Library/Logs]
+
+[monitor:///var/log]
+whitelist = (\.log|log$|messages|secure|auth|mesg$|cron$|acpid$|\.out)
+blacklist = (lastlog|anaconda\.syslog)
+
+[monitor:///var/adm]
+whitelist = (\.log|log$|messages)
+
+[monitor:///etc]
+whitelist = (\.conf|\.cfg|config$|\.ini|\.init|\.cf|\.cnf|shrc$|^ifcfg|\.profile|\.rc|\.rules|\.tab|tab$|\.login|policy$)
+
+[monitor:///root/.bash_history]
+
+[monitor:///home/*/.bash_history]
+
+[script://./bin/openPortsEnhanced.sh]
+
+[script://./bin/passwd.sh]
+
+[script://./bin/selinuxChecker.sh]
+
+[script://./bin/service.sh]
+
+[script://./bin/sshdChecker.sh]
+
+[script://./bin/update.sh]
+
+[script://./bin/uptime.sh]
+
+[script://./bin/version.sh]
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ base_ol7
+=== +++ (ol7 only)
+=== === === +++
+=== ===
+=== +++
++++
+
+[monitor:///var/log/libvirt/qemu/*.log]
+
+[monitor:///var/log/libvirt/libvirtd.log]
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ base_sunos
+=== +++ (sunos only)
+=== === === +++
+=== ===
+=== +++
++++
+
+[monitor:///u01/oracle/data/logs]
+
+[monitor:///u01/oracle/data/posia/logs]
+
+[monitor:///u04/oracle/fast_recovery_area]
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ db_
+=== === === +++
+=== ===
+=== +++
++++
+
+[monitor:///u01/app/oracle/admin/.../adump/*.aud]
+
+[monitor:///u01/app/oracle/diag/rdbms/.../.../alert/*.xml]
+
+[monitor:///u01/app/oracle/diag/tnslsnr/.../listener/alert/*.xml]
+
+[monitor:///u01/app/oracle/diag/rdbms/.../.../trace/*.trc]
+
+[monitor:///u01/app/oracle/diag/rdbms/.../.../incident/incdir*/*.trc]
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ metrics_
+=== === === +++
+=== ===
+=== +++
++++
+
+[script://./bin/cpu_usage.sh]
+
+[script://./bin/memory_usage.sh]
+
+[script://./bin/swap_usage.sh]
+
+[script://./bin/uptime_sec.sh]
+
+[script://./bin/loadavg.sh]
+
+[script://./bin/df_usage.sh]
+
+[script://./bin/disk_usage.sh]
+
+[script://./bin/interface_usage.sh]
+
+[script://./bin/process_usage.sh]
+
+[script://./bin/process_total.sh]
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ applications
+=== === === +++
+=== ===
+=== +++
++++
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ wls_admin_
+=== +++ (paths change according to domain & environment)
+=== === === +++
+=== ===
+=== +++
++++
+
+
+[monitor:///u01/app/oracle/config/domains/domain01/servers/AdminServer/logs/access.log]
+
+[monitor:///u01/app/oracle/config/domains/domain01/servers/AdminServer/logs/*.log]
+
+[script://su - oracle -c './bin/runWlstScriptsMinute.sh']
+
+[script://su - oracle -c './bin/runWlstScriptsHourly.sh']
+
+[script://su - oracle -c './bin/runWlstScriptsDaily.sh']
+
+[monitor://$SPLUNK_HOME/var/log/wls_jmx*]
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ wls_man
+=== === === +++
+=== ===
+=== +++
++++
+
+[monitor:///u01/app/oracle/config/domains/*/servers/*/logs/access.log]
+
+[monitor:///u01/app/oracle/config/domains/*/servers/*/logs/*.log]
+
+[monitor:///u01/app/oracle/product/fmw/wlserver_10.3/common/nodemanager/
