@@ -12,16 +12,99 @@ usage() {
     printf " --collectd             Install collectd. *NEW*\n"
 }
 
+HOSTNAME=$(hostname)
+
+collectdconf() {
+    CONFDIR="/opt/collectd/etc"
+    PLUGINDIR="/opt/collectd/lib/collectd"
+    LOGDIR="/opt/collectd/var/log"
+    ANNOUNCE="[COLLECTD - CONFIG] "
+    echo "$ANNOUNCE Writing collectd.conf..."
+    mv $CONFDIR/collectd.conf $CONFDIR/collectd.conf.old
+    touch $CONFDIR/collectd.conf
+    (
+        echo "Hostname  '$HOSTNAME'"
+        echo "BaseDir   '/opt/lib/collectd'"
+        echo "PIDFile   '/opt/run/collectd.pid'"
+        echo "PluginDir '/opt/collectd/lib/collectd'"
+        echo "LoadPlugin syslog"
+        echo "LoadPlugin logfile"
+        echo "<Plugin logfile>"
+        echo "    LogLevel info"
+        echo "    File /opt/collectd/var/log/collectd.log"
+        echo "    Timestamp true"
+        echo "    PrintSeverity false"
+        echo "</Plugin>"
+        echo "LoadPlugin cpu"
+#        echo "LoadPlugin df"
+#        echo "LoadPlugin disk"
+        echo "LoadPlugin interface"
+        echo "LoadPlugin load"
+        echo "LoadPlugin memory"
+#        echo "LoadPlugin network"
+        echo "LoadPlugin nfs"
+        echo "LoadPlugin write_splunk"
+        echo "<Plugin cpu>"
+        echo "    ReportByCpu true"
+        echo "    ReportByState true"
+        echo "    ValuesPercentage false"
+        echo "    ReportNumCpu false"
+        echo "    ReportGuestState false"
+        echo "    SubtractGuestState true"
+        echo "</Plugin>"
+        echo "<Plugin interface>"
+        echo "    Interface 'eno1'"
+        echo "    IgnoreSelected false"
+        echo "    ReportInactive true"
+        echo "    UniqueName false"
+        echo "</Plugin>"
+        echo "<Plugin load>"
+        echo "    ReportRelative true"
+        echo "</Plugin>"
+        echo "<Plugin memory>"
+        echo "    ValuesAbsolute true"
+        echo "    ValuesPercentage false"
+        echo "</Plugin>"
+        echo "<Plugin nfs>"
+        echo "    ReportV4 true"
+        echo "</Plugin>"
+        echo "<Plugin write_splunk>"
+        echo "    Dimension 'key:value'"
+        echo "    Port '8088'"
+        echo "    Token ''"
+        echo "    Server ''"
+        echo "    Batchsize 1024"
+        echo "    Buffersize 1048576"
+        echo "    PostTimeout 30"
+        echo "    Ssl false"
+        echo "    Verifyssl false"
+        echo "    SplunkMetricTransform true"
+#        echo "    DiskAsDimensions true"
+        echo "    InterfaceAsDimensions true"
+        echo "    CpuAsDimensions true"
+#        echo "    DfAsDimensions true"
+        echo "    StoreRates true"
+        echo "    UseUdp false"
+        echo "</Plugin>"
+    )>/opt/collectd/etc/collectd.conf
+    read -p "$ANNOUNCE View collectd.conf now? [y/n]: " VIEWCHOICE
+    if [ "$VIEWCHOICE" == y ]; then
+        less "$CONFDIR"/collectd.conf
+    fi
+}
+
 collectd() {
         # If not called from install(), query for OS
     OS_PASS=$1
-    ANNOUNCE="[COLLECTD]"
+    ANNOUNCE="[COLLECTD - INSTALL] "
     if [[ -z $OS ]]; then
         read -p "Choose: Solaris or Linux   [s/l]: " OS_CMD
         if [ "$OS_CMD" == s ] || [ $OS_PASS -eq 1 ]; then
                 # Solaris install
                 # Check for correct repos
-            TAR="collectd_write-splunk_sparc.tar.gz"
+            TAR="spkcollectd_sparc.tar.gz"
+            MANIFEST="/opt/collectd/svc/manifest/network/spkcollectd.xml"
+            METHOD="/opt/collectd/svc/method/svc-spkcollectd"
             if pkg publisher | grep -q support || pkg publisher | grep -q release ; then
                     # Check for & install deps
                 declare -a DEPS=(
@@ -47,19 +130,31 @@ collectd() {
                 echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
             fi
                 # Begin installation
+            if [[ -d /opt/collectd ]]; then
+                echo "$ANNOUNCE Existing install found. Removing."
+                sleep 2
+                rm -rf /opt/collectd
+            fi
             cd /opt
             cp "$INSTALL_HOME"/"$TAR" .
-            tar -zxvf collectd_write-splunk_sparc.tar.gz
-            rm -f collectd_write-splunk_sparc.tar.gz
+            tar -zxvf $TAR
+            rm -f $TAR
+                # Build config
+            collectdconf
+                # Create SMF service
+            echo "$ANNOUNCE Creating SMF service."
+            sleep 2
+            cp -f $METHOD /lib/svc/method
+            chmod +x /lib/svc/method/svc-spkcollectd
+            cp -f $MANIFEST /lib/svc/network/spkcollectd
+            svcadm restart manifest-import
 
         elif [ "$OS_CMD" == l ] || [ $OS_PASS -eq 2 ]; then
             # Linux install
             # Check & get deps
-            TAR="collectd-5.9-wpatch.tar.gz"
+            TAR="spkcollectd_x86.tar.gz"
             declare -a DEPS=(
-                "autoconf" "automake" "flex"
-                "bison" "libtool" "pkg-config"
-                "libcurl-devel" "libxml2" "libxml2-devel"
+                "libcurl-devel" "libcurl"
             )
             for DEP in "${DEPS[@]}"
             do
@@ -71,15 +166,11 @@ collectd() {
                     echo "$ANNOUNCE $DEP already installed, skipping."
                 fi
             done
-            cd /opt
-            cp "$INSTALL_HOME"/"$TAR" .
-            tar -xvf $TAR
-            rm -f $TAR
-            cd collectd
-            ./build.sh
-            ./configure --with-libxml2=/usr/include/libxml2/libxml \
-            --disable-perl --disable-python
-
+                # Extract archive
+            tar -zxvf "$INSTALL_HOME"/"$TAR" -C /opt
+                # Build config
+            collectdconf
+                # Create systemd service
         fi
     fi
 }
@@ -240,9 +331,9 @@ addwlscron() {
 
 #Installs: (1)splunk ufw, (2)cron permissions scripts, (3)collectd
 install() {
-    HOSTNAME=$(hostname)
+    
     SPLUNK_CMD_DEPLOY="splunk set deploy-poll 192.168.60.211:8089"
-    HOME_ROOT="/export/home"
+    
 
 #####
     #
@@ -253,17 +344,17 @@ install() {
     read -p "Choose: Solaris or Linux   [s/l]: "  OS
 
     if [[ "$OS" == "s" ]]; then
-        COLLECTD_CONF_DIR="/opt/collectd/etc"
-        COLLECTD_PLUGIN_DIR="/opt/collectd/lib/collectd"
-        COLLECTD_LOG_DIR="/opt/collectd/var/log"
         CRON_DIR="/var/spool/cron/crontabs"
         SPLUNK_TAR="splunkforwarder-8.0.5-a1a6394cc5ae-SunOS-x86_64.tar.Z"
+        HOME_ROOT="/export/home"
+        PROFILE=".profile"
+        ADMGROUP="adm"
     elif [[ "$OS" == "l" ]]; then
-        COLLECTD_CONF_DIR="/etc"
-        COLLECTD_PLUGIN_DIR=""
-        COLLECTD_LOG_DIR=""
         CRON_DIR="/var/spool/cron"
         SPLUNK_TAR="splunk-8.0.4-767223ac207f-Linux-x86_64.tgz"
+        HOME_ROOT="/home"
+        PROFILE=".bash_profile"
+        ADMGROUP="wheel"
     fi
     read -p "Choose: NP or PSPR     [np/pspr]: "  ENV
     if [[ "$ENV" == "np" ]]; then
@@ -295,14 +386,14 @@ install() {
 
 	id -u splunk
 
-	if [[ $? -eq 1 ]]; then
+	if [[ $? != 0 ]]; then
         echo "$ANNOUNCE No splunk user found. Creating."
         sleep 2
 		useradd splunk
         groupadd splunk
-        usermod -G +splunk,adm #wheel,oinstall
+        usermod -G +splunk,$ADMGROUP
         mkdir "$HOME_ROOT/splunk"
-        cp "$HOME_ROOT/opc/.profile" "$HOME_ROOT/splunk"
+        touch "$HOME_ROOT/splunk/$PROFILE"
         su - splunk -c "export PATH=$PATH:/opt/splunkforwarder/bin"
         chown --recursive splunk:splunk "$HOME_ROOT/splunk"
 	fi
@@ -315,7 +406,7 @@ install() {
         tar -zxvf "$SPLUNK_TAR"
         rm -f "$SPLUNK_TAR"
 
-        grep -q splunk "$HOME_ROOT/splunk/.profile"
+        grep -q splunk "$HOME_ROOT/splunk/$PROFILE"
 
         if [ $? -eq 1 ]; then
             echo "$ANNOUNCE Splunk not in PATH. Adding."
@@ -323,8 +414,9 @@ install() {
     	    echo "export PATH=$PATH:/opt/splunkforwarder/bin" >> "$HOME_ROOT/splunk/.profile"
         fi
 
+        echo "$ANNOUNCE Configuring firewall..."
+        sleep 2
         declare -a PORTS=("8088" "8089" "9997")
-
         for PORT in "${PORTS[@]}"; do
             grep $PORT /etc/firewall/pf.conf
             if [[ $? -eq 1 ]]; then
@@ -337,11 +429,42 @@ install() {
     fi
 
         #Linux install
-    #if [[ "$OS" == "l" ]]; then
+    if [[ "$OS" == "l" ]]; then
+        echo "$ANNOUNCE Installing universal forwarder..."
+        sleep 2
+        tar -zxvf "$INSTALL_HOME/$SPLUNK_TAR" -C /opt
 
-    #fi
+        grep -q splunk "$HOME_ROOT/splunk/$PROFILE"
+
+        if [ $? -eq 1 ]; then
+            echo "$ANNOUNCE Splunk not in PATH. Adding."
+            sleep 2
+    	    echo "export PATH=$PATH:/opt/splunkforwarder/bin" >> "$HOME_ROOT/splunk/$PROFILE"
+        fi
+
+        systemctl status firewalld | grep running
+        if [ $? == 0 ]; then
+            echo "$ANNOUNCE Configuring firewall..."
+            sleep 2
+            declare -a PORTS=("8088" "8089" "9997")
+            for PORT in "${PORTS[@]}"; do
+                firewall-cmd --list-all | grep $PORT
+                if [[ $? != 0 ]]; then
+                    echo "$ANNOUNCE Port " "$PORT" " closed. Opening..."
+                    sleep 2
+                    firewall-cmd --zone=public --permanent --add-port=$PORT/tcp
+                fi
+            done
+            systemctl restart firewalld
+        else
+            echo "$ANNOUNCE FirewallD not running. Skipping configuration."
+            sleep 2
+        fi
+    fi
 
         #Make user-seed.conf
+    echo "$ANNOUNCE Generating user-seed.conf."
+    sleep 2
     touch /opt/splunkforwarder/etc/system/local/user-seed.conf
 	(
 		echo "[user_info]"
@@ -350,6 +473,8 @@ install() {
 	)>/opt/splunkforwarder/etc/system/local/user-seed.conf
 
     	#Make splunk-launch.conf
+    echo "$ANNOUNCE Generating user-seed.conf."
+    sleep 2
 	touch /opt/splunkforwarder/etc/splunk-launch.conf
 	(
 		echo "SPLUNK_SERVER_NAME=Splunkd"
@@ -361,12 +486,16 @@ install() {
 	chmod --recursive g+rwx /opt/splunkforwarder/
 
         # Start Splunk, set forward & deploy servers
+    echo "$ANNOUNCE Starting Splunk, configuring deploy & forward servers."
+    sleep 2
     su - splunk -c "splunk start --accept-license --no-prompt --answer-yes"
     su - splunk -c "$SPLUNK_CMD_FORWARD"
     su - splunk -c "$SPLUNK_CMD_DEPLOY"
     echo "$ANNOUNCE Writing outputs.conf..."
 
         # Create outputs.conf
+    echo "$ANNOUNCE Creating outputs.conf."
+    sleep 2
     touch /opt/splunkforwarder/etc/system/local/outputs.conf
 		(
 			echo "[tcpout]"
