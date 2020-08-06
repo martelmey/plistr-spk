@@ -2,16 +2,129 @@ These are the current monitoring configurations:
 
 base_<ol7/sunos>_<env>
 	Basic OS monitoring of logs, files and directories.
+	Based on: Splunk_TA_nix
+	Sourcetypes: 23
+		aix_secure
+		bandwidth
+		bash_history
+		config_file
+		df
+		dhcpd
+		fs_notification
+		interfaces
+		iostat
+		lastlog
+		Linux:SELinuxConfig
+		linux_secure (Operating System)
+		lsof
+		netstat
+		nfsiostat
+		openPorts
+		osx_secure
+		package
+		protocol
+		syslog	(Operating System)
+		time
+		usersWithLoginPrivs
+		who
 
 db_<env>
 	Scripts & filepaths related to Oracle Database log monitoring.
-
-metrics_<ol7/sunos>_<env>
+	Based on: Splunk_TA_oracle
+	Sourcetypes: 5
+		oracle:audit:text
+		oracle:audit:xml
+		oracle:alert:xml
+		oracle:incident
+		oracle:trace
+		oracle:listener:xml
+	
+metrics_ol7_<env>
+	Based on: Metrics addon for SAI
 	Scripts for gathering and sending OS metrics data.
 
 wls_<admin/man>_<env>_<domain>_(<dev/tst>)
 	Scripts & filepaths related to WebLogic monitoring.
+	Based on: Function1_WebLogicServer
+	Sourcetypes: 18
+		cpu
+		hardware
+		Perfmon:CPUTime_process
+		ps
+		top
+		vmstat
+		wls_admin_adminserver
+		wls_adminserver
+		wls_adminserver_access
+		wls_jmx
+		wls_managed_wciportal_log
+		wls_managed_wciportal_out
+		wls_managedserver
+		wls_managedserver_access
+		wls_managedserver_out
+		wls_nodemanager
+		wls_nodemgrservice
+		wls_win_jmx
 
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ apps
+=== === === +++
+=== ===
+=== +++
++++
+
+7 sourcetypes total
+* WLS Server logs
+* Application logs
+	- hial
+	- posia
+	- lab
+	- cache
+* Gfish logs
+* DS logs
+
+	#HIAL & POSIA
+/u01/app/oracle/config/domains/ps-01-<hial/posia>/servers
+WLS Server logs
+index = wls_
+
+/u01/oracle/data/logs
+Application logs
+index = app_
+
+	#LAB
+/opt/SUNWappserver/domains/ps-01-lab/logs
+Gfish logs
+index = gfish_
+
+/opt/SUNWappserver/domains/ps-01-lab/logs/fgwbc
+Application logs
+index = app_
+
+	#CACHE
+/opt/cachesys/mgr
+Application logs
+index = app_
+
+	#IDAM
+/opt/SUNWappserver/domains/ps-hial-fam/logs
+Gfish logs
+index = gfish_
+
+/opt/SUNWappserver/domains/ps-cmu-fam/logs
+Gfish logs
+index = gfish_
+
+/opt/SUNWappserver/domains/ps-cmu-idm/logs
+Gfish logs
+index = gfish_
+
+/opt/dsee7/ds1/logs
+DS logs
+index = ds_
 
 +++
 === +++
@@ -114,53 +227,46 @@ whitelist = (\.conf|\.cfg|config$|\.ini|\.init|\.cf|\.cnf|shrc$|^ifcfg|\.profile
 === +++
 === ===
 === === === +++
-=== +++ base_ol7
-=== +++ (ol7 only)
-=== === === +++
-=== ===
-=== +++
-+++
-
-[monitor:///var/log/libvirt/qemu/*.log]
-
-[monitor:///var/log/libvirt/libvirtd.log]
-
-+++
-=== +++
-=== ===
-=== === === +++
-=== +++ base_sunos
-=== +++ (sunos only)
-=== === === +++
-=== ===
-=== +++
-+++
-
-[monitor:///u01/oracle/data/logs]
-
-[monitor:///u01/oracle/data/posia/logs]
-
-[monitor:///u04/oracle/fast_recovery_area]
-
-+++
-=== +++
-=== ===
-=== === === +++
 === +++ db_
 === === === +++
 === ===
 === +++
 +++
 
+[monitor:///u01/app/oracle/admin/.../adump/*.xml]
+sourcetype = oracle:audit:xml
+crcSalt = <SOURCE>
+index = db_np
+
 [monitor:///u01/app/oracle/admin/.../adump/*.aud]
+sourcetype = oracle:audit:text
+crcSalt = <SOURCE>
+index = db_np
 
 [monitor:///u01/app/oracle/diag/rdbms/.../.../alert/*.xml]
+sourcetype = oracle:alert:xml
+crcSalt = <SOURCE>
+index = db_np
+
+[monitor:///u01/app/oracle/diag/rdbms/hlddev/hlddev/alert/log.xml]
+sourcetype = oracle:alert:xml
+crcSalt = <SOURCE>
+index = db_np
 
 [monitor:///u01/app/oracle/diag/tnslsnr/.../listener/alert/*.xml]
+sourcetype = oracle:listener:xml
+crcSalt = <SOURCE>
+index = db_np
 
 [monitor:///u01/app/oracle/diag/rdbms/.../.../trace/*.trc]
+sourcetype = oracle:trace
+crcSalt = <SOURCE>
+index = db_np
 
 [monitor:///u01/app/oracle/diag/rdbms/.../.../incident/incdir*/*.trc]
+sourcetype = oracle:incident
+crcSalt = <SOURCE>
+index = db_np
 
 +++
 === +++
@@ -196,16 +302,6 @@ whitelist = (\.conf|\.cfg|config$|\.ini|\.init|\.cf|\.cnf|shrc$|^ifcfg|\.profile
 === +++
 === ===
 === === === +++
-=== +++ applications
-=== === === +++
-=== ===
-=== +++
-+++
-
-+++
-=== +++
-=== ===
-=== === === +++
 === +++ wls_admin_
 === +++ (paths change according to domain & environment)
 === === === +++
@@ -213,18 +309,39 @@ whitelist = (\.conf|\.cfg|config$|\.ini|\.init|\.cf|\.cnf|shrc$|^ifcfg|\.profile
 === +++
 +++
 
+[monitor:///u01/app/oracle/config/domains/*/servers/AdminServer/logs/access.log]
+index = wls_ps
+sourcetype = wls_adminserver_access
+disabled = false
 
-[monitor:///u01/app/oracle/config/domains/domain01/servers/AdminServer/logs/access.log]
-
-[monitor:///u01/app/oracle/config/domains/domain01/servers/AdminServer/logs/*.log]
+[monitor:///u01/app/oracle/config/domains/*/servers/AdminServer/logs/*.log]
+index = wls_ps
+sourcetype = wls_adminserver
+blacklist = access.log
+disabled = false
 
 [script://su - oracle -c './bin/runWlstScriptsMinute.sh']
+disabled = false
+index = wls_ps
+sourcetype = wls_trash
+interval = 60
 
 [script://su - oracle -c './bin/runWlstScriptsHourly.sh']
+disabled = false
+index = wls_ps
+sourcetype = wls_trash
+interval = 3600
 
 [script://su - oracle -c './bin/runWlstScriptsDaily.sh']
+disabled = false
+index = wls_ps
+sourcetype = wls_trash
+interval = 86400
 
 [monitor://$SPLUNK_HOME/var/log/wls_jmx*]
+disabled = false
+index = wls_ps
+sourcetype = wls_jmx
 
 +++
 === +++
@@ -237,7 +354,17 @@ whitelist = (\.conf|\.cfg|config$|\.ini|\.init|\.cf|\.cnf|shrc$|^ifcfg|\.profile
 +++
 
 [monitor:///u01/app/oracle/config/domains/*/servers/*/logs/access.log]
+index = wls_ps
+sourcetype = wls_managedserver
+blacklist = access.log
+disabled = false
 
-[monitor:///u01/app/oracle/config/domains/*/servers/*/logs/*.log]
+[monitor:///u01/app/oracle/config/domains/*/servers/*/logs/access.log]
+index = wls_ps
+sourcetype = wls_managedserver_access
+disabled = false
 
-[monitor:///u01/app/oracle/product/fmw/wlserver_10.3/common/nodemanager/
+[monitor:///u01/app/oracle/product/fmw/wlserver_10.3/common/nodemanager/nodemanager.log]
+index = wls_ps
+sourcetype = wls_nodemanager
+disabled = false

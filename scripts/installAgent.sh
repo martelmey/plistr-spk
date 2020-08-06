@@ -9,24 +9,16 @@ usage() {
     printf " --verify               Verify install, permissions, configurations.\n"
     printf " --add-permits-cron     Create permit cron tailored to system.\n"
     printf " --add-wls-cron         Add WLS scripts to crontab.\n"
-    printf " --collectd             Install collectd. *NEW*\n"
+    printf " --collectd             Install collectd for Solaris hosts. *NEW*\n"
 }
 
 HOSTNAME=$(hostname)
 
 collectdconf() {
-    OS_PASS=$1
-    if [[ $OS_PASS == 1 ]]; then
-        CONFDIR="/opt/collectd/etc"
-        PLUGINDIR="/opt/collectd/lib/collectd"
-        LOGDIR="/opt/collectd/var/log"
-        BASEDIR="/opt/lib/collectd"
-    elif [[ $OS_PASS == 2 ]]; then
-        CONFDIR="/etc"
-        PLUGINDIR="/usr/lib64/collectd"
-        LOGDIR="/etc"
-        BASEDIR="/usr/sbin"
-    fi
+    CONFDIR="/opt/collectd/etc"
+    PLUGINDIR="/opt/collectd/lib/collectd"
+    LOGDIR="/opt/collectd/var/log"
+    BASEDIR="/opt/lib/collectd"
 
     ANNOUNCE="[COLLECTD - CONFIG] "
     touch $LOGDIR/collectd.log
@@ -104,95 +96,54 @@ collectdconf() {
 }
 
 collectd() {
-        # If not called from install(), query for OS
-    OS_PASS=$1
     ANNOUNCE="[COLLECTD - INSTALL] "
-    if [[ -z $OS ]]; then
-        read -p "Choose: Solaris or Linux   [s/l]: " OS_CMD
-        if [ "$OS_CMD" == s ] || [ $OS_PASS -eq 1 ]; then
-                # Solaris install
-                # Check for correct repos
-            TAR="spkcollectd_sparc.tar.gz"
-            MANIFEST="/opt/collectd/svc/manifest/network/spkcollectd.xml"
-            METHOD="/opt/collectd/svc/method/svc-spkcollectd"
-            if pkg publisher | grep -q support || pkg publisher | grep -q release ; then
-                    # Check for & install deps
-                declare -a DEPS=(
-                    "developer/base-developer-utilities"
-                    "library/libidn2" "library/libssh2" "library/libxml2"
-                    "library/nghttp2" "library/security/libgpg-error"
-                    "library/security/openssl" "library/zlib" "security/kerberos-5"
-                    "system/library/libpcap" "system/library/math" "system/library/security/libgcrypt"
-                    "system/library" "system/management/snmp/net-snmp"
-                    "system/network/ldap/openldap" "web/curl"
-                    )
-                for DEP in "${DEPS[@]}"
-                do
-                    if ! pkg list $DEP | grep -q i-- ; then
-                        echo "$ANNOUNCE $DEP will be installed."
-                        sleep 2
-                        pkg install $DEP
-                    else
-                        echo "$ANNOUNCE $DEP already installed, skipping."
-                    fi
-                done
-            else
-                echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
-            fi
-                # Begin installation
-            if [[ -d /opt/collectd ]]; then
-                echo "$ANNOUNCE Existing install found. Removing."
-                sleep 2
-                rm -rf /opt/collectd
-            fi
-            cd /opt
-            cp "$INSTALL_HOME"/"$TAR" .
-            tar -zxvf $TAR
-            rm -f $TAR
-                # Build config
-            collectdconf 1
-                # Create SMF service
-            echo "$ANNOUNCE Creating SMF service."
-            sleep 2
-            cp -f $METHOD /lib/svc/method
-            chmod +x /lib/svc/method/svc-spkcollectd
-            cp -f $MANIFEST /lib/svc/network/spkcollectd
-            svcadm restart manifest-import
-
-        elif [ "$OS_CMD" == l ] || [ $OS_PASS -eq 2 ]; then
-            # Linux install
-            # Check & get deps
-            TAR="spkcollectd_x86.tar.gz"
-            PLUGIN="write_splunk.so"
-            PLUGINDIR="/usr/lib64/collectd"
-            declare -a DEPS=(
-                "libcurl-devel" "libcurl"
-                "libc" "libcrypto" "libgcrypt"
-                "libgpg-error" "libm" "libmnl"
-                "libpthread" "libssl" "libyajl"
+        # Check for correct repos
+    TAR="spkcollectd_sparc.tar.gz"
+    MANIFEST="/opt/collectd/svc/manifest/network/spkcollectd.xml"
+    METHOD="/opt/collectd/svc/method/svc-spkcollectd"
+    if pkg publisher | grep -q support || pkg publisher | grep -q release ; then
+            # Check for & install deps
+        declare -a DEPS=(
+            "developer/base-developer-utilities"
+            "library/libidn2" "library/libssh2" "library/libxml2"
+            "library/nghttp2" "library/security/libgpg-error"
+            "library/security/openssl" "library/zlib" "security/kerberos-5"
+            "system/library/libpcap" "system/library/math" "system/library/security/libgcrypt"
+            "system/library" "system/management/snmp/net-snmp"
+            "system/network/ldap/openldap" "web/curl"
             )
-            for DEP in "${DEPS[@]}"
-            do
-                if ! yum list installed $DEP; then
-                    echo "$ANNOUNCE $DEP will be installed."
-                    sleep 2
-                    yum install $DEP
-                else
-                    echo "$ANNOUNCE $DEP already installed, skipping."
-                fi
-            done
-                # Start install
-            yum -y install epel-release
-            yum -y install collectd
-            cp $INSTALL_HOME/$PLUGIN $PLUGINDIR
-            chmod +x $PLUGINDIR/$PLUGIN
-                # Startup
-            systemctl enable --now collectd
-            systemctl stop collectd
-            collectdconf 2
-            systemctl start collectd
-        fi
+        for DEP in "${DEPS[@]}"
+        do
+            if ! pkg list $DEP | grep -q i-- ; then
+                echo "$ANNOUNCE $DEP will be installed."
+                sleep 2
+                pkg install $DEP
+            else
+                echo "$ANNOUNCE $DEP already installed, skipping."
+            fi
+        done
+    else
+        echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
     fi
+        # Begin installation
+    if [[ -d /opt/collectd ]]; then
+        echo "$ANNOUNCE Existing install found. Removing."
+        sleep 2
+        rm -rf /opt/collectd
+    fi
+    cd /opt
+    cp "$INSTALL_HOME"/"$TAR" .
+    tar -zxvf $TAR
+    rm -f $TAR
+        # Build config
+    collectdconf 1
+        # Create SMF service
+    echo "$ANNOUNCE Creating SMF service."
+    sleep 2
+    cp -f $METHOD /lib/svc/method
+    chmod +x /lib/svc/method/svc-spkcollectd
+    cp -f $MANIFEST /lib/svc/network/spkcollectd
+    svcadm restart manifest-import
 }
 
 addoraclepermitcron() {
@@ -354,7 +305,6 @@ install() {
     
     SPLUNK_CMD_DEPLOY="splunk set deploy-poll 192.168.60.211:8089"
     
-
 #####
     #
     #(0)set environment
@@ -577,9 +527,7 @@ install() {
 #####
 
     if [[ "$OS" == "s" ]]; then
-        collectd 1
-    elif [[ "$OS" == "s" ]]; then
-        collectd 2
+        collectd
     fi
 
 }

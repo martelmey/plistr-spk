@@ -1,0 +1,17 @@
+Knowledge manual:
+https://docs.splunk.com/Documentation/Splunk/8.0.5/Knowledge/WhatisSplunkknowledge
+
+Transforms.conf:
+https://docs.splunk.com/Documentation/Splunk/8.0.5/Admin/Transformsconf
+
+Props.conf:
+https://docs.splunk.com/Documentation/Splunk/8.0.5/Admin/Propsconf
+
+Eventtypes.conf:
+https://docs.splunk.com/Documentation/Splunk/8.0.5/Admin/Eventtypesconf
+
+Tags.conf:
+https://docs.splunk.com/Documentation/Splunk/8.0.5/Admin/Tagsconf
+
+Addon builder docs:
+https://docs.splunk.com/Documentation/AddonBuilder/3.0.2/UserGuide/BeforeYouBegin
