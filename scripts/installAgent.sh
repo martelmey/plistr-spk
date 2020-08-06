@@ -15,23 +15,33 @@ usage() {
 HOSTNAME=$(hostname)
 
 collectdconf() {
-    CONFDIR="/opt/collectd/etc"
-    PLUGINDIR="/opt/collectd/lib/collectd"
-    LOGDIR="/opt/collectd/var/log"
+    OS_PASS=$1
+    if [[ $OS_PASS == 1 ]]; then
+        CONFDIR="/opt/collectd/etc"
+        PLUGINDIR="/opt/collectd/lib/collectd"
+        LOGDIR="/opt/collectd/var/log"
+        BASEDIR="/opt/lib/collectd"
+    elif [[ $OS_PASS == 2 ]]; then
+        CONFDIR="/etc"
+        PLUGINDIR="/usr/lib64/collectd"
+        LOGDIR="/etc"
+        BASEDIR="/usr/sbin"
+    fi
+
     ANNOUNCE="[COLLECTD - CONFIG] "
+    touch $LOGDIR/collectd.log
     echo "$ANNOUNCE Writing collectd.conf..."
-    mv $CONFDIR/collectd.conf $CONFDIR/collectd.conf.old
-    touch $CONFDIR/collectd.conf
+    cp $CONFDIR/collectd.conf $CONFDIR/collectd.conf.old
     (
         echo "Hostname  '$HOSTNAME'"
-        echo "BaseDir   '/opt/lib/collectd'"
-        echo "PIDFile   '/opt/run/collectd.pid'"
-        echo "PluginDir '/opt/collectd/lib/collectd'"
+        echo "BaseDir   '$BASEDIR'"
+#        echo "PIDFile   '/opt/run/collectd.pid'"
+        echo "PluginDir '$PLUGINDIR'"
         echo "LoadPlugin syslog"
         echo "LoadPlugin logfile"
         echo "<Plugin logfile>"
         echo "    LogLevel info"
-        echo "    File /opt/collectd/var/log/collectd.log"
+        echo "    File $LOGDIR/collectd.log"
         echo "    Timestamp true"
         echo "    PrintSeverity false"
         echo "</Plugin>"
@@ -86,7 +96,7 @@ collectdconf() {
         echo "    StoreRates true"
         echo "    UseUdp false"
         echo "</Plugin>"
-    )>/opt/collectd/etc/collectd.conf
+    )>$CONFDIR/collectd.conf
     read -p "$ANNOUNCE View collectd.conf now? [y/n]: " VIEWCHOICE
     if [ "$VIEWCHOICE" == y ]; then
         less "$CONFDIR"/collectd.conf
@@ -140,7 +150,7 @@ collectd() {
             tar -zxvf $TAR
             rm -f $TAR
                 # Build config
-            collectdconf
+            collectdconf 1
                 # Create SMF service
             echo "$ANNOUNCE Creating SMF service."
             sleep 2
@@ -153,8 +163,13 @@ collectd() {
             # Linux install
             # Check & get deps
             TAR="spkcollectd_x86.tar.gz"
+            PLUGIN="write_splunk.so"
+            PLUGINDIR="/usr/lib64/collectd"
             declare -a DEPS=(
                 "libcurl-devel" "libcurl"
+                "libc" "libcrypto" "libgcrypt"
+                "libgpg-error" "libm" "libmnl"
+                "libpthread" "libssl" "libyajl"
             )
             for DEP in "${DEPS[@]}"
             do
@@ -166,11 +181,16 @@ collectd() {
                     echo "$ANNOUNCE $DEP already installed, skipping."
                 fi
             done
-                # Extract archive
-            tar -zxvf "$INSTALL_HOME"/"$TAR" -C /opt
-                # Build config
-            collectdconf
-                # Create systemd service
+                # Start install
+            yum -y install epel-release
+            yum -y install collectd
+            cp $INSTALL_HOME/$PLUGIN $PLUGINDIR
+            chmod +x $PLUGINDIR/$PLUGIN
+                # Startup
+            systemctl enable --now collectd
+            systemctl stop collectd
+            collectdconf 2
+            systemctl start collectd
         fi
     fi
 }

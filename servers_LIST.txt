@@ -23,7 +23,7 @@ test-hial1      	:	192.168.63.25
 
 ===: PS
 
-kdcps-db00				: 	192.168.62.25
+(abc)kdcps-db00				: 	192.168.62.25
 kdcps-db10				: 	192.168.62.26
 (abc)kdcps-hial-ohs1		:	192.168.62.38
 (abc)kdcps-hial-ohs2		:	192.168.62.39
@@ -46,3 +46,8 @@ kdcps-db10				: 	192.168.62.26
 (abc)kdcps-cache2		:	192.168.62.57
 (abc)kdcps-lab1			:	192.168.62.58
 (abc)kdcps-lab2			:	192.168.62.59
+
+===: CDC
+jump                    :   192.168.160.10
+nessus                  :   192.168.160.152
+ops tools               :   192.168.160.153
