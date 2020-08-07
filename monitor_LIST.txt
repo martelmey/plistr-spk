@@ -77,7 +77,7 @@ wls_<admin/man>_<env>_<domain>_(<dev/tst>)
 +++
 
 7 sourcetypes total
-* WLS Server logs
+* WLS Server logs [done]
 * Application logs
 	- hial
 	- posia
@@ -90,41 +90,122 @@ wls_<admin/man>_<env>_<domain>_(<dev/tst>)
 /u01/app/oracle/config/domains/ps-01-<hial/posia>/servers
 WLS Server logs
 index = wls_
+defined in wls_man_*
+sourcetype = wls_managedserver
+sourcetype = wls_managedserver_access
 
 /u01/oracle/data/logs
 Application logs
 index = app_
+defined in
+sourcetype = app_<hial>
+						_agg [done]
+							_jee
+						_av
+							_av
+							_jee
+						_cri
+							_soa
+							_jee 
+						_csr [done]
+							_jee
+						_dd
+							_jee
+							_jeeb
+							_soa
+						_ial
+							_av
+						_igf
+							_jee
+						_la
+							_av
+							_jee
+							_jeeb
+							_soa
+						_pdal
+							_jee
+						_pri
+							_jee
+							_soa
+						_sch
+							_jeeb
+						_ss
+							_jee
+							_soa
+						_xrs
+							_av
+							_jee
+			 app_<posia>
+			 			_excl
+						_fha
+						_iha
+						_nha
+						_phsa
+						_psm
+						_vcha
+						_viha
 
 	#LAB
 /opt/SUNWappserver/domains/ps-01-lab/logs
 Gfish logs
 index = gfish_
+sourcetype = gfish_
+				  _jvm
+				  _server
 
 /opt/SUNWappserver/domains/ps-01-lab/logs/fgwbc
 Application logs
 index = app_
+sourcetype = app_lab_
+					_cacheReportIdLogger
+					_labRepository [done]
+					_performance
+					_plisDataExtract
+					_businessEventAudit
+					_resultsReportingCache
+					_summaryTimings
 
 	#CACHE
 /opt/cachesys/mgr
 Application logs
 index = app_
+sourcetype = app_cache_
+				 	  _alerts
+					  _cboot
+					  _cconsole
+					  _journal
+					  _superserver
 
 	#IDAM
 /opt/SUNWappserver/domains/ps-hial-fam/logs
 Gfish logs
 index = gfish_
+sourcetype = gfish_
+				  _jvm
+				  _server
 
 /opt/SUNWappserver/domains/ps-cmu-fam/logs
 Gfish logs
 index = gfish_
+sourcetype = gfish_
+				  _jvm
+				  _server
 
 /opt/SUNWappserver/domains/ps-cmu-idm/logs
 Gfish logs
 index = gfish_
+sourcetype = gfish_
+				  _jvm
+				  _server
 
 /opt/dsee7/ds1/logs
 DS logs
 index = ds_
+sourcetype = ds_cmu_
+			 ds_hial_
+			 		_access
+					_audit
+					_errors
 
 +++
 === +++
