@@ -2,6 +2,37 @@
 
 dev-cache1			:	
 (abc)knpdb11			:	192.168.63.21
+    diag/rdbms/hlddev /incident /trace /alert
+    diag/rdbms/hlddev2 /incident /trace /alert
+    diag/rdbms/hldtst /incident /trace /alert
+    diag/rdbms/laddev /incident /trace /alert
+    diag/rdbms/laddev2 /incident /trace /alert
+    diag/rdbms/ladtst /incident /trace /alert
+    diag/rdbms/mpddev /incident /trace /alert
+    diag/rdbms/mpddev2 /incident /trace /alert
+    diag/rdbms/mpdtst /incident /trace /alert
+    diag/rdbms/soaddev /incident /trace /alert
+    diag/rdbms/soaddev2 /incident /trace /alert
+    diag/rdbms/soadtst /incident /trace /alert
+    diag/rdbms/stbddev /incident /trace /alert
+    diag/rdbms/stbddev2 /incident /trace /alert
+    diag/rdbms/stbdtst /incident /trace /alert
+    admin/hlddev
+    admin/hlddev2 /adump
+    admin/hldtst
+    admin/laddev
+    admin/laddev2 /adump
+    admin/ladtst
+    admin/mpddev
+    admin/mpddev2 /adump
+    admin/mpdtst /adump
+    admin/soaddev
+    admin/soaddev2
+    admin/soadtst
+    admin/stbddev
+    admin/stbddev2 /adump
+    admin/stbdtst
+    diag/tnslsnr/knpdb11/listener/alert/
 (ab)dev-hial1    	:	192.168.63.23
 (ab)dev-posia1		:	192.168.63.24
 (ab)dev-hial-fam1	:	192.168.63.29
@@ -24,6 +55,21 @@ test-hial1      	:	192.168.63.25
 ===: PS
 
 (abc)kdcps-db00				: 	192.168.62.25
+    admin/hldps /adump
+    admin/ladps /adump
+    admin/mpdps /adump
+    admin/soadps /adump
+    admin/stbdps /adump
+    diag/rdbms/hldps /incident /trace /alert
+    diag/rdbms/mpdps /incident /trace /alert
+    diag/rdbms/soadps /incident /trace /alert
+    diag/rdbms/stbdps /incident /trace /alert
+    diag/tnslsnr/kdcps-db00/listener_kdcmgmt1
+    diag/tnslsnr/kdcps-db00/listener_kdc_int_ps
+    diag/tnslsnr/kdcps-db00/listener_kdcintps
+    diag/tnslsnr/kdcps-db00/listener_mgmt1
+    diag/tnslsnr/kdcps-db00/kdc_int_ps
+    diag/tnslsnr/kdcps-db00/lis_mgmt1
 kdcps-db10				: 	192.168.62.26
 (abc)kdcps-hial-ohs1		:	192.168.62.38
 (abc)kdcps-hial-ohs2		:	192.168.62.39

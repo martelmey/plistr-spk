@@ -183,6 +183,14 @@ addoraclepermitcron() {
         fi
     done
     chmod +x /root/splunk-scripts/assertGroupPermits.sh
+    if cat "$CRON_DIR"/root | grep -q "assertGroupPermits.sh" ; then
+        echo "$ANNOUNCE Cronjob for group permits assertion already present."
+        sleep 2
+    else
+        echo "$ANNOUNCE Adding cronjob to assert group permits every 2 minutes."
+        sleep 2
+        echo "0 0 * * * /root/splunk-scripts/assertGroupPermits.sh" >> $CRON_DIR/root
+    fi
 
     id -u oracle
     if [[ $? -eq 1 ]]; then
@@ -202,17 +210,28 @@ addoraclepermitcron() {
                     usermod -G splunk,oinstall oracle
                 fi
             fi
+            OINSTALL=0
+            ASMADMIN=0
+            USERMOD_CMD=""
+                # check for oinstall
             grep -q oinstall /etc/group
             if [[ $? -eq 0 ]]; then
-                    #Add splunk user to oinstall group
-                if groups splunk | grep -q oinstall; then
-                    echo "$ANNOUNCE Splunk user already part of oinstall group. No change."
-                    sleep 2
-                else
-                    echo "$ANNOUNCE Adding Splunk to oinstall group."
-                    sleep 2
-                    usermod -G oinstall,splunk splunk
+                echo "$ANNOUNCE oinstall group found."
+                $OINSTALL=1
+                    # check for asmadmin
+                grep -q asmadmin /etc/group
+                if [[ $? -eq 0 ]]; then
+                    echo "$ANNOUNCE asmadmin group found."
+                    $ASMADMIN=1
                 fi
+                    # asmadmin + oinstall
+                if [[ $OINSTALL -eq 1 && $ASMADMIN -eq 1 ]]; then
+                    $USERMOD_CMD="usermod -G oinstall,asmadmin,splunk splunk"
+                    # oinstall only
+                else
+                    $USERMOD_CMD="usermod -G oinstall,splunk splunk"
+                fi
+                $USERMOD_CMD
             else
                 echo "$ANNOUNCE No oinstall group found. No change."
                 sleep 2
@@ -385,6 +404,7 @@ install() {
         fi
 
         echo "$ANNOUNCE Configuring firewall..."
+        cp /etc/firewall/pf.conf /etc/firewall/pf.conf.old
         sleep 2
         declare -a PORTS=("8088" "8089" "9997")
         for PORT in "${PORTS[@]}"; do
