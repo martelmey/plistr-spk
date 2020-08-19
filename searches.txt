@@ -1,6 +1,9 @@
 index="db_ps" OR index="os_evt_ps" host="kdcps-db10"
 | chart count by source
 
+index="db_ps" OR index="os_evt_ps" host="kdcps-db10" eventtype=openPorts
+| chart count by Port
+
 index="db_ps" host="kdcps-db10"
 | chart count by source
 

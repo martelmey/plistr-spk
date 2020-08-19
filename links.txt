@@ -15,3 +15,6 @@ https://docs.splunk.com/Documentation/Splunk/8.0.5/Admin/Tagsconf
 
 Addon builder docs:
 https://docs.splunk.com/Documentation/AddonBuilder/3.0.2/UserGuide/BeforeYouBegin
+
+Python strptime():
+https://www.journaldev.com/23365/python-string-to-datetime-strptime
