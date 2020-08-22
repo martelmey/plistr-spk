@@ -1,0 +1,60 @@
+From: jcaps@oracle.com
+To:gail.goncalves@cgi.com
+MIME-Version: 1.0"
+Subject: KIDC PS - iEHR PLIS Status Report
+Content-Type: text/html
+
+
+<body style="font-family:arial;font-size:12px;">
+
+
+:FLAGS:<b>FLAGS</b>
+<hr>
+:AppServers:<b>Critical App Servers</b>
+:IGF:<b>IGF</b>
+:PLIS:<b>Plis Beans</b>
+:SS:<b>Subscription Service</b>
+:LAB:<b>Labs</b>
+
+<br>
+<br>
+
+<table border="0" style="font-family:arial;font-size:12px;">
+<tbody align="center"> <th>POSIA</th><th>Cur</th><th>PrevHr</th><th>Last received</th><th>Last returned</th><th>Last EMS</th></tr>
+:Queue Counts: Posia In Queues
+</tbody>
+</table>
+
+<br>
+
+<table border="0" style="font-family:arial;font-size:12px;">
+<tbody align="center">
+<th align="left">Subscription Services Queues</th>
+<tr><th align="left">POSEID</th><th>&nbsp;&nbsp;Name&nbsp;&nbsp;</th><th>&nbsp;&nbsp;Status&nbsp;&nbsp;</th><th>&nbsp;&nbsp;Count&nbsp;&nbsp;</th><th>&nbsp;&nbsp;Date/Time of first message in queue&nbsp;&nbsp;</th></tr>
+:Distribution Status:
+</tbody>
+</table>
+
+<br>
+
+<table style="font-family:arial;font-size:11px;">
+<tr><td><b>Cur</b><td>Current level of POSIA input queue.</td></tr>
+<tr><td><b>PrvHr</b></td><td>Count of messages arriving in the previous hour.</td></tr>
+<tr><td><b>Last received</b></td><td>Time most recent message was received.</td></tr>
+<tr><td><b>Last returned</b></td><td>Time of most recent return from HIAL.</td></tr>
+<tr><td><b>Last EMS</b></td><td>Time of most recent acknowledgement of EMS received.</td></tr>
+</table>
+
+<hr>
+<style="font-family:arial;font-size:10px;">
+<i>All times Pacific Time.<br>
+Time format is day@hour:minute<br>
+N/A No data available for this report period.</br>
+</i>
+</p>
+
+
+</body>
+</html>
+
+
