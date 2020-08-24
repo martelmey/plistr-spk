@@ -98,7 +98,7 @@ collectdconf() {
 collectd() {
     ANNOUNCE="[COLLECTD - INSTALL] "
         # Check for correct repos
-    TAR="spkcollectd_sparc.tar.gz"
+    TAR="collectd_write-splunk_sparc.tar.gz"
     MANIFEST="/opt/collectd/svc/manifest/network/spkcollectd.xml"
     METHOD="/opt/collectd/svc/method/svc-spkcollectd"
     if pkg publisher | grep -q support || pkg publisher | grep -q release ; then
@@ -120,30 +120,33 @@ collectd() {
                 pkg install $DEP
             else
                 echo "$ANNOUNCE $DEP already installed, skipping."
+                sleep 2
             fi
         done
+            # Begin installation
+        if [[ -d /opt/collectd ]]; then
+            echo "$ANNOUNCE Existing install found. Removing."
+            sleep 2
+            rm -rf /opt/collectd
+        fi
+        cd /opt
+        echo "$ANNOUNCE Beginning collectd install."
+        sleep 2
+        cp "$INSTALL_HOME"/"$TAR" .
+        tar -zxvf $TAR
+        rm -f $TAR
+            # Build config
+        collectdconf 1
+            # Create SMF service
+        echo "$ANNOUNCE Creating SMF service."
+        sleep 2
+        cp -f $METHOD /lib/svc/method
+        chmod +x /lib/svc/method/svc-spkcollectd
+        cp -f $MANIFEST /lib/svc/network/spkcollectd
+        svcadm restart manifest-import
     else
         echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
     fi
-        # Begin installation
-    if [[ -d /opt/collectd ]]; then
-        echo "$ANNOUNCE Existing install found. Removing."
-        sleep 2
-        rm -rf /opt/collectd
-    fi
-    cd /opt
-    cp "$INSTALL_HOME"/"$TAR" .
-    tar -zxvf $TAR
-    rm -f $TAR
-        # Build config
-    collectdconf 1
-        # Create SMF service
-    echo "$ANNOUNCE Creating SMF service."
-    sleep 2
-    cp -f $METHOD /lib/svc/method
-    chmod +x /lib/svc/method/svc-spkcollectd
-    cp -f $MANIFEST /lib/svc/network/spkcollectd
-    svcadm restart manifest-import
 }
 
 addoraclepermitcron() {
@@ -210,31 +213,20 @@ addoraclepermitcron() {
                     usermod -G splunk,oinstall oracle
                 fi
             fi
-            OINSTALL=0
-            ASMADMIN=0
-            USERMOD_CMD=""
-                # check for oinstall
-            grep -q oinstall /etc/group
-            if [[ $? -eq 0 ]]; then
-                echo "$ANNOUNCE oinstall group found."
-                $OINSTALL=1
-                    # check for asmadmin
-                grep -q asmadmin /etc/group
-                if [[ $? -eq 0 ]]; then
-                    echo "$ANNOUNCE asmadmin group found."
-                    $ASMADMIN=1
-                fi
-                    # asmadmin + oinstall
-                if [[ $OINSTALL -eq 1 && $ASMADMIN -eq 1 ]]; then
-                    $USERMOD_CMD="usermod -G oinstall,asmadmin,splunk splunk"
-                    # oinstall only
-                else
-                    $USERMOD_CMD="usermod -G oinstall,splunk splunk"
-                fi
-                $USERMOD_CMD
-            else
-                echo "$ANNOUNCE No oinstall group found. No change."
-                sleep 2
+                # check for oinstall & asmadmin groups
+            if  grep -q oinstall /etc/group  &&  grep -q asmadmin /etc/group; then
+                echo "$ANNOUNCE oinstall & asmadmin groups found. Assigning to Splunk user."
+                usermod -G +oinstall splunk
+                usermod -G +asmadmin splunk
+                sleep 3
+            elif grep -q oinstall /etc/group; then
+                echo "$ANNOUNCE oinstall group found. Assinging to Splunk user."
+                usermod -G +oinstall splunk
+                sleep 3
+            elif grep -q asmadmin /etc/group; then
+                echo "$ANNOUNCE asmadmin group found. Assinging to Splunk user."
+                usermod -G +asmadmin splunk
+                sleep 3
             fi
     fi
         #Run assertGroupPermits.sh now
@@ -249,7 +241,7 @@ addwlscron() {
 
     #Create root cron if not present
     if [[ ! -f "$CRON_DIR"/root ]]; then
-        echo "$ANNOUNCE No Oracle user present. Skipping group changes."
+        echo "$ANNOUNCE No root cron present. Creating ..."
         sleep 2
         touch "$CRON_DIR"/root
     fi
@@ -323,6 +315,10 @@ addwlscron() {
 install() {
     
     SPLUNK_CMD_DEPLOY="splunk set deploy-poll 192.168.60.211:8089"
+
+    #if [[ ! -f "$INSTALL_HOME" ]]; then
+    #    
+    #fi
     
 #####
     #
@@ -334,13 +330,13 @@ install() {
 
     if [[ "$OS" == "s" ]]; then
         CRON_DIR="/var/spool/cron/crontabs"
-        SPLUNK_TAR="splunkforwarder-8.0.5-a1a6394cc5ae-SunOS-x86_64.tar.Z"
+        SPLUNK_TAR="splunkforwarder-8.0.3-a6754d8441bf-SunOS-sparc.tar.Z"
         HOME_ROOT="/export/home"
         PROFILE=".profile"
         ADMGROUP="adm"
     elif [[ "$OS" == "l" ]]; then
         CRON_DIR="/var/spool/cron"
-        SPLUNK_TAR="splunk-8.0.4-767223ac207f-Linux-x86_64.tgz"
+        SPLUNK_TAR="splunkforwarder-8.0.5-a1a6394cc5ae-Linux-x86_64.tgz"
         HOME_ROOT="/home"
         PROFILE=".bash_profile"
         ADMGROUP="wheel"
@@ -373,21 +369,36 @@ install() {
         sudo su - splunk -c "/opt/splunkforwarder/bin/.splunk stop"
 	fi
 
-	id -u splunk
-
-	if [[ $? != 0 ]]; then
-        echo "$ANNOUNCE No splunk user found. Creating."
-        sleep 2
-		useradd splunk
-        groupadd splunk
-        usermod -G +splunk,$ADMGROUP
-        mkdir "$HOME_ROOT/splunk"
-        touch "$HOME_ROOT/splunk/$PROFILE"
-        su - splunk -c "export PATH=$PATH:/opt/splunkforwarder/bin"
-        chown --recursive splunk:splunk "$HOME_ROOT/splunk"
-	fi
         #Solaris install
     if [[ "$OS" == "s" ]]; then
+        id -u splunk
+        if [[ $? != 0 ]]; then
+            echo "$ANNOUNCE No splunk user found. Creating."
+            sleep 2
+            useradd splunk
+            groupadd splunk
+            usermod -G +$ADMGROUP splunk
+            usermod -G +splunk splunk
+            mkdir "$HOME_ROOT/splunk"
+            chown --recursive splunk:splunk "$HOME_ROOT/splunk"
+            usermod -d "$HOME_ROOT/splunk" splunk
+            touch "$HOME_ROOT/splunk/$PROFILE"
+            (
+                echo "export PATH=/usr/bin:/usr/sbin:/opt/splunkforwarder/bin"
+                echo "if [ -f /usr/bin/less ]; then"
+                echo '    export PAGER="/usr/bin/less -ins"'
+                echo "elif [ -f /usr/bin/more ]; then"
+                echo '    export PAGER="/usr/bin/more -s"'
+                echo "fi"
+                echo "case ${SHELL} in"
+                echo "*bash)"
+                echo '    typeset +x PS1="\u@\h:\w\\$ "'
+                echo "    ;;"
+                echo "esac"
+            )>>"$HOME_ROOT/splunk/$PROFILE"
+            source "$HOME_ROOT/splunk/$PROFILE"
+            chown --recursive splunk:splunk "$HOME_ROOT/splunk"
+	    fi
         echo "$ANNOUNCE Installing universal forwarder..."
         sleep 2
         cp "$INSTALL_HOME/$SPLUNK_TAR" /opt/
@@ -420,18 +431,34 @@ install() {
 
         #Linux install
     if [[ "$OS" == "l" ]]; then
+        id -u splunk
+        if [[ $? != 0 ]]; then
+            echo "$ANNOUNCE No splunk user found. Creating."
+            sleep 2
+            useradd splunk
+            groupadd splunk
+            usermod -G +splunk,$ADMGROUP splunk
+            mkdir "$HOME_ROOT/splunk"
+            touch "$HOME_ROOT/splunk/$PROFILE"
+            (
+                echo "export PATH=/usr/bin:/usr/sbin:/opt/splunkforwarder/bin"
+                echo "if [ -f /usr/bin/less ]; then"
+                echo '    export PAGER="/usr/bin/less -ins"'
+                echo "elif [ -f /usr/bin/more ]; then"
+                echo '    export PAGER="/usr/bin/more -s"'
+                echo "fi"
+                echo "case ${SHELL} in"
+                echo "*bash)"
+                echo '    typeset +x PS1="\u@\h:\w\\$ "'
+                echo "    ;;"
+                echo "esac"
+            )>>"$HOME_ROOT/splunk/$PROFILE"
+            source "$HOME_ROOT/splunk/$PROFILE"
+            chown --recursive splunk:splunk "$HOME_ROOT/splunk"
+	    fi
         echo "$ANNOUNCE Installing universal forwarder..."
         sleep 2
         tar -zxvf "$INSTALL_HOME/$SPLUNK_TAR" -C /opt
-
-        grep -q splunk "$HOME_ROOT/splunk/$PROFILE"
-
-        if [ $? -eq 1 ]; then
-            echo "$ANNOUNCE Splunk not in PATH. Adding."
-            sleep 2
-    	    echo "export PATH=$PATH:/opt/splunkforwarder/bin" >> "$HOME_ROOT/splunk/$PROFILE"
-        fi
-
         systemctl status firewalld | grep running
         if [ $? == 0 ]; then
             echo "$ANNOUNCE Configuring firewall..."
@@ -463,7 +490,7 @@ install() {
 	)>/opt/splunkforwarder/etc/system/local/user-seed.conf
 
     	#Make splunk-launch.conf
-    echo "$ANNOUNCE Generating user-seed.conf."
+    echo "$ANNOUNCE Generating splunk-launch.conf."
     sleep 2
 	touch /opt/splunkforwarder/etc/splunk-launch.conf
 	(
