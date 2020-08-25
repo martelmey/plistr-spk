@@ -1,0 +1,451 @@
+These are the current monitoring configurations:
+
+base_<ol7/sunos>_<env>
+	Basic OS monitoring of logs, files and directories.
+	Based on: Splunk_TA_nix
+	Sourcetypes: 23
+		aix_secure
+		bandwidth
+		bash_history
+		config_file
+		df
+		dhcpd
+		fs_notification
+		interfaces
+		iostat
+		lastlog
+		Linux:SELinuxConfig
+		linux_secure (Operating System)
+		lsof
+		netstat
+		nfsiostat
+		openPorts
+		osx_secure
+		package
+		protocol
+		syslog	(Operating System)
+		time
+		usersWithLoginPrivs
+		who
+
+db_<env>
+	Scripts & filepaths related to Oracle Database log monitoring.
+	Based on: Splunk_TA_oracle
+	Sourcetypes: 5
+		oracle:audit:text
+		oracle:audit:xml
+		oracle:alert:xml
+		oracle:incident
+		oracle:trace
+		oracle:listener:xml
+	
+metrics_ol7_<env>
+	Based on: Metrics addon for SAI
+	Scripts for gathering and sending OS metrics data.
+
+wls_<admin/man>_<env>_<domain>_(<dev/tst>)
+	Scripts & filepaths related to WebLogic monitoring.
+	Based on: Function1_WebLogicServer
+	Sourcetypes: 18
+		cpu
+		hardware
+		Perfmon:CPUTime_process
+		ps
+		top
+		vmstat
+		wls_admin_adminserver
+		wls_adminserver
+		wls_adminserver_access
+		wls_jmx
+		wls_managed_wciportal_log
+		wls_managed_wciportal_out
+		wls_managedserver
+		wls_managedserver_access
+		wls_managedserver_out
+		wls_nodemanager
+		wls_nodemgrservice
+		wls_win_jmx
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ apps
+=== === === +++
+=== ===
+=== +++
++++
+
+7 sourcetypes total
+* WLS Server logs [done]
+* Application logs
+	- hial
+	- posia
+	- lab
+	- cache
+* Gfish logs
+* DS logs
+
+	#HIAL & POSIA
+/u01/app/oracle/config/domains/ps-01-<hial/posia>/servers
+WLS Server logs
+index = wls_
+defined in wls_man_*
+sourcetype = wls_managedserver
+sourcetype = wls_managedserver_access
+
+/u01/oracle/data/logs
+Application logs
+index = app_
+defined in
+sourcetype = app_<hial>
+						_agg [done]
+							_jee
+						_av
+							_av
+							_jee
+						_cri
+							_soa
+							_jee 
+						_csr [done]
+							_jee
+						_dd
+							_jee
+							_jeeb
+							_soa
+						_ial
+							_av
+						_igf
+							_jee
+						_la
+							_av
+							_jee
+							_jeeb
+							_soa
+						_pdal
+							_jee
+						_pri
+							_jee
+							_soa
+						_sch
+							_jeeb
+						_ss
+							_jee
+							_soa
+						_xrs
+							_av
+							_jee
+			 app_<posia>
+			 			_excl
+						_fha
+						_iha
+						_nha
+						_phsa
+						_psm
+						_vcha
+						_viha
+
+	#LAB
+/opt/SUNWappserver/domains/ps-01-lab/logs
+Gfish logs
+index = gfish_
+sourcetype = gfish_
+				  _jvm
+				  _server
+
+/opt/SUNWappserver/domains/ps-01-lab/logs/fgwbc
+Application logs
+index = app_
+sourcetype = app_lab_
+					_cacheReportIdLogger
+					_labRepository [done]
+					_performance
+					_plisDataExtract
+					_businessEventAudit
+					_resultsReportingCache
+					_summaryTimings
+
+	#CACHE
+/opt/cachesys/mgr
+Application logs
+index = app_
+sourcetype = app_cache_
+				 	  _alerts
+					  _cboot
+					  _cconsole
+					  _journal
+					  _superserver
+
+	#IDAM
+/opt/SUNWappserver/domains/ps-hial-fam/logs
+Gfish logs
+index = gfish_
+sourcetype = gfish_
+				  _jvm
+				  _server
+
+/opt/SUNWappserver/domains/ps-cmu-fam/logs
+Gfish logs
+index = gfish_
+sourcetype = gfish_
+				  _jvm
+				  _server
+
+/opt/SUNWappserver/domains/ps-cmu-idm/logs
+Gfish logs
+index = gfish_
+sourcetype = gfish_
+				  _jvm
+				  _server
+
+/opt/dsee7/ds1/logs
+DS logs
+index = ds_
+sourcetype = ds_cmu_
+			 ds_hial_
+			 		_access
+					_audit
+					_errors
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ base_
+=== +++ (both ol7 & sunos)
+=== === === +++
+=== ===
+=== +++
++++
+
+[monitor:///var/log/syslog]
+
+[monitor:///var/log/daemon.log]
+
+[monitor:///var/log/auth.log]
+
+[monitor:///var/log/apache/access.log]
+
+[monitor:///var/log/apache/error.log]
+
+[monitor:///opt/splunkforwarder/var/log/splunk/*.log]
+
+[monitor:///etc/collectd/collectd.log]
+
+[script://./bin/vmstat.sh]
+
+[script://./bin/iostat.sh]
+
+[script://./bin/nfsiostat.sh]
+
+[script://./bin/ps.sh]
+
+[script://./bin/top.sh]
+
+[script://./bin/netstat.sh]
+
+[script://./bin/bandwidth.sh]
+
+[script://./bin/protocol.sh]
+
+[script://./bin/openPorts.sh]
+
+[script://./bin/time.sh]
+
+[script://./bin/lsof.sh]
+
+[script://./bin/df.sh]
+
+[script://./bin/who.sh]
+
+[script://./bin/usersWithLoginPrivs.sh]
+
+[script://./bin/lastlog.sh]
+
+[script://./bin/interfaces.sh]
+
+[script://./bin/cpu.sh]
+
+[script://./bin/rlog.sh]
+
+[script://./bin/package.sh]
+
+[script://./bin/hardware.sh]
+
+[monitor:///Library/Logs]
+
+[monitor:///var/log]
+whitelist = (\.log|log$|messages|secure|auth|mesg$|cron$|acpid$|\.out)
+blacklist = (lastlog|anaconda\.syslog)
+
+[monitor:///var/adm]
+whitelist = (\.log|log$|messages)
+
+[monitor:///etc]
+whitelist = (\.conf|\.cfg|config$|\.ini|\.init|\.cf|\.cnf|shrc$|^ifcfg|\.profile|\.rc|\.rules|\.tab|tab$|\.login|policy$)
+
+[monitor:///root/.bash_history]
+
+[monitor:///home/*/.bash_history]
+
+[script://./bin/openPortsEnhanced.sh]
+
+[script://./bin/passwd.sh]
+
+[script://./bin/selinuxChecker.sh]
+
+[script://./bin/service.sh]
+
+[script://./bin/sshdChecker.sh]
+
+[script://./bin/update.sh]
+
+[script://./bin/uptime.sh]
+
+[script://./bin/version.sh]
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ db_
+=== === === +++
+=== ===
+=== +++
++++
+
+[monitor:///u01/app/oracle/admin/.../adump/*.xml]
+sourcetype = oracle:audit:xml
+crcSalt = <SOURCE>
+index = db_np
+
+[monitor:///u01/app/oracle/admin/.../adump/*.aud]
+sourcetype = oracle:audit:text
+crcSalt = <SOURCE>
+index = db_np
+
+[monitor:///u01/app/oracle/diag/rdbms/.../.../alert/*.xml]
+sourcetype = oracle:alert:xml
+crcSalt = <SOURCE>
+index = db_np
+
+[monitor:///u01/app/oracle/diag/rdbms/hlddev/hlddev/alert/log.xml]
+sourcetype = oracle:alert:xml
+crcSalt = <SOURCE>
+index = db_np
+
+[monitor:///u01/app/oracle/diag/tnslsnr/.../listener/alert/*.xml]
+sourcetype = oracle:listener:xml
+crcSalt = <SOURCE>
+index = db_np
+
+[monitor:///u01/app/oracle/diag/rdbms/.../.../trace/*.trc]
+sourcetype = oracle:trace
+crcSalt = <SOURCE>
+index = db_np
+
+[monitor:///u01/app/oracle/diag/rdbms/.../.../incident/incdir*/*.trc]
+sourcetype = oracle:incident
+crcSalt = <SOURCE>
+index = db_np
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ metrics_
+=== === === +++
+=== ===
+=== +++
++++
+
+[script://./bin/cpu_usage.sh]
+
+[script://./bin/memory_usage.sh]
+
+[script://./bin/swap_usage.sh]
+
+[script://./bin/uptime_sec.sh]
+
+[script://./bin/loadavg.sh]
+
+[script://./bin/df_usage.sh]
+
+[script://./bin/disk_usage.sh]
+
+[script://./bin/interface_usage.sh]
+
+[script://./bin/process_usage.sh]
+
+[script://./bin/process_total.sh]
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ wls_admin_
+=== +++ (paths change according to domain & environment)
+=== === === +++
+=== ===
+=== +++
++++
+
+[monitor:///u01/app/oracle/config/domains/*/servers/AdminServer/logs/access.log]
+index = wls_ps
+sourcetype = wls_adminserver_access
+disabled = false
+
+[monitor:///u01/app/oracle/config/domains/*/servers/AdminServer/logs/*.log]
+index = wls_ps
+sourcetype = wls_adminserver
+blacklist = access.log
+disabled = false
+
+[script://su - oracle -c './bin/runWlstScriptsMinute.sh']
+disabled = false
+index = wls_ps
+sourcetype = wls_trash
+interval = 60
+
+[script://su - oracle -c './bin/runWlstScriptsHourly.sh']
+disabled = false
+index = wls_ps
+sourcetype = wls_trash
+interval = 3600
+
+[script://su - oracle -c './bin/runWlstScriptsDaily.sh']
+disabled = false
+index = wls_ps
+sourcetype = wls_trash
+interval = 86400
+
+[monitor://$SPLUNK_HOME/var/log/wls_jmx*]
+disabled = false
+index = wls_ps
+sourcetype = wls_jmx
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ wls_man
+=== === === +++
+=== ===
+=== +++
++++
+
+[monitor:///u01/app/oracle/config/domains/*/servers/*/logs/access.log]
+index = wls_ps
+sourcetype = wls_managedserver
+blacklist = access.log
+disabled = false
+
+[monitor:///u01/app/oracle/config/domains/*/servers/*/logs/access.log]
+index = wls_ps
+sourcetype = wls_managedserver_access
+disabled = false
+
+[monitor:///u01/app/oracle/product/fmw/wlserver_10.3/common/nodemanager/nodemanager.log]
+index = wls_ps
+sourcetype = wls_nodemanager
+disabled = false

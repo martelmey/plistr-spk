@@ -1,0 +1,253 @@
+===: DEPLOYAPPS:
+
+{
+	base_ol7_NP
+	base_ol7_PRD
+	base_ol7_PS
+	base_sunos_NP
+	base_sunos_PRD
+	base_sunos_PS
+
+	- inputs.conf
+	- outputs.conf
+}
+
+{
+	db_NP
+	db_PRD
+	db_PS
+
+	- inputs.conf
+}
+
+{
+	metrics_ol7_NP
+	metrics_ol7_PRD
+	metrics_ol7_PS
+	metrics_sunos_NP
+	metrics_sunos_PRD
+	metrics_sunos_PS
+
+	- dims.conf
+	- inputs.conf
+}
+
+{
+	wls_admin_NP
+	wls_admin_PRD
+	wls_admin_PS
+	wls_man_NP
+	wls_man_PRD
+	wls_man_PS
+
+	- inputs.conf
+}
+
++++
+=== +++
+=== ===
+=== === === +++
+=== +++ applications
+=== === === +++
+=== ===
+=== +++
++++
+
+# app configs
+# Existing apps: wls, db
+# Find/make	   : gfish, ds, app
+
+{
+	PS
+	hial (wls & app)
+		/u01/app/oracle/config/domains/ps-01-hial/servers
+		/u01/oracle/data/logs
+	posia (wls & app)
+		/u01/app/oracle/config/domains/ps-01-posia/servers
+		/u01/oracle/data/posia/logs
+	lab1 (gfish & app)
+		/opt/SUNWappserver/domains/ps-gets-lab/logs
+		/opt/SUNWappserver/domains/ps-gets-lab/logs/fgwbc
+	lab2 (app & app)
+		/opt/SUNWappserver/domains/ps-puts-lab/logs
+		/opt/SUNWappserver/domains/ps-puts-lab/logs/fgwbc
+	cache1 (app)
+		/opt/cachesys/mgr
+	cache2 (app)
+		/opt/cachesys/mgr
+	idam
+		hialfam1 (gfish)
+		kdcps-hial-fam1
+			/opt/SUNWappserver/domains/ps-hial-fam/logs
+		hialcmufam1 (gfish)
+		kdcps-cmu-fam1
+			/opt/SUNWappserver/domains/ps-cmu-fam/logs
+		hialidm1 (gfish)
+		kdcps-hial-idm1
+			/opt/SUNWappserver/domains/ps-cmu-idm/logs
+		hiald1 (ds)
+		kdcps-hial-d1
+			/opt/dsee7/ds1/logs
+		hialcmud1 (ds)
+		kdcps-cmu-d1
+			/opt/dsee7/ds1/logs
+}
+
+{
+	TST
+	hial (wls & app)
+	test-hial-wls1
+		/u01/app/oracle/config/domains/test-01-hial/servers
+		/u01/oracle/data/logs
+	posia (wls & app)
+	test-posia-wls1
+		/u01/app/oracle/config/domains/test-01-posia/servers
+		/u01/oracle/data/posia/logs
+	lab 1 (gfish & app)
+	test-lab1
+		/opt/SUNWappserver/domains/test-lab/logs
+		/opt/SUNWappserver/domains/test-lab/logs/fgwbc
+	lab 2 (gfish app)
+	test-lab2
+		/opt/SUNWappserver/domains/test-lab/logs
+		/opt/SUNWappserver/domains/test-lab/logs/fgwbc
+	cache (app)
+	test-cache1
+		/opt/cachesys/mgr
+	idam
+		hialfam1 (gfish)
+		test-hial-fam1
+			/opt/SUNWappserver/domains/test-hial-fam/logs
+		hialcmufam1 (gfish)
+		test-cmu-fam1
+			/opt/SUNWappserver/domains/test-cmu-fam/logs
+		hialidm1 (gfish)
+		test-idm1
+			/opt/SUNWappserver/domains/test-cmu-idm/logs
+		hialfam1 (ds)
+		test-hial-fam1
+			/opt/dsee7/ds1/logs
+		hialcmufam1 (ds)
+		test-cmu-fam1
+			/opt/dsee7/ds1/logs
+}
+
+{
+	DEV
+	hial (wls & app)
+	dev-hial-wls1
+		/u01/app/oracle/config/domains/domain01/servers
+		/u01/oracle/data/logs
+	posia (wls & app)
+	dev-posia-wls1
+		/u01/app/oracle/config/domains/domain01/servers
+		/u01/oracle/data/posia/logs
+	lab1 (gfish & app)
+	dev-lab1
+		/opt/SUNWappserver/domains/dev-lab/logs
+		/opt/SUNWappserver/domains/dev-lab/logs/fgwbc
+	cache (app)
+	dev-cache1
+		/opt/cachesys/mgr
+	idam
+		hialfam1 (gfish)
+		dev-hial-fam1
+			/opt/SUNWappserver/domains/dev-hial-fam/logs
+		cmufam1 (gfish)
+		dev-cmu-fam1
+			/opt/SUNWappserver/domains/dev-cmu-fam/logs
+		idm1 (gfish)
+		dev-idm1
+			/opt/SUNWappserver/domains/dev-cmu-idm/logs
+		fam1 (ds)
+		dev-hial-fam1
+			/opt/dsee7/ds1/logs
+		cmufam1 (ds)
+		dev-cmu-fam1
+			/opt/dsee7/ds1/logs
+}
+
+===: CENTRALAPPS:
+
+{
+	search
+
+	- indexes.conf
+	- inputs.conf
+	- props.conf
+	- serverclass.conf
+}
+
+Splunk_TA_oracle
+
+{
+	splunk_app_db_connect
+
+	- inputs.conf
+	- db_connections.conf
+	- dbx_settings.conf
+	- identities.conf
+}
+
+{
+	splunk_httpinput
+
+	- inputs.conf
+}
+
+{
+	Function1_WebLogicServer
+	- indexes.conf
+	- macros.conf
+
+	Function1_WLS_App
+	- macros.conf
+
+	Function1_WLS_IDX_SH_TA
+	- indexes.conf
+}
+
+{
+	splunk_app_infrastructure
+
+	- inputs.conf (disabled)
+	- macros.conf
+}
+
+{
+	Splunk_TA_Infrastructure
+
+	- indexes.conf
+}
+
+{
+	Splunk_TA_nix
+
+	- indexes.conf
+	- inputs.conf (disabled)
+}
+
+
+===: PSPRCENTRALLOCAL
+
+authentication.conf
+indexes.conf
+inputs.conf
+migration.conf
+server.conf
+authorize.conf
+outputs.conf
+serverclass.conf
+
+===: PSPRHFORWARDERLOCAL
+
+===: NPHFORWARDERLOCAL
+
+inputs.conf
+migration.conf
+server.conf
+authorize.conf
+outputs.conf
+props.conf
+transforms.conf
+deploymentclient.conf

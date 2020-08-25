@@ -99,8 +99,8 @@ collectd() {
     ANNOUNCE="[COLLECTD - INSTALL] "
         # Check for correct repos
     TAR="collectd_write-splunk_sparc.tar.gz"
-    MANIFEST="/opt/collectd/svc/manifest/network/spkcollectd.xml"
-    METHOD="/opt/collectd/svc/method/svc-spkcollectd"
+    MANIFEST="/export/pkgs/splunk/spkcollectd.xml"
+    METHOD="/export/pkgs/splunk/svc-spkcollectd"
     if pkg publisher | grep -q support || pkg publisher | grep -q release ; then
             # Check for & install deps
         declare -a DEPS=(
@@ -142,7 +142,7 @@ collectd() {
         sleep 2
         cp -f $METHOD /lib/svc/method
         chmod +x /lib/svc/method/svc-spkcollectd
-        cp -f $MANIFEST /lib/svc/network/spkcollectd
+        cp -f $MANIFEST /lib/svc/manifest/network
         svcadm restart manifest-import
     else
         echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
