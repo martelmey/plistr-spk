@@ -1,3 +1,6 @@
+https://docs.splunk.com/Documentation/Splunk/8.0.5/SearchReference/Multikv
+https://community.splunk.com/t5/Monitoring-Splunk/Create-Splunk-Storage-Disk-Space-Capacity-Alarm-Alert/td-p/317095
+
 index="db_ps" OR index="os_evt_ps" host="kdcps-db10"
 | chart count by source
 
@@ -9,3 +12,23 @@ index="db_ps" host="kdcps-db10"
 
 index="db_np" host="knpdb11"
 | chart count by source
+
+index="db_np" OR index="os_evt_np" host="knpdb11"
+| chart count by sourcetype
+
+index="db_np" OR index="os_evt_np" host="knpdb11" sourcetype="df"
+
+index="db_np" OR index="os_evt_np" host="knpdb11" sourcetype=df
+| multikv fields Filesystem Type Size Used Avail UsePct MountedOn
+| convert auto(UsePct)
+| where UsePct>90 AND MountedOn="/u01"
+
+`dmc_get_forwarder_tcpin` hostname=knpdb11
+| eval source_uri = hostname.":".sourcePort
+| eval dest_uri = host.":".destPort
+| eval connection = source_uri."->".dest_uri
+| stats values(fwdType) as fwdType, values(sourceIp) as sourceIp, latest(version) as version,  values(os) as os, values(arch) as arch, dc(dest_uri) as dest_count, dc(connection) as connection_count, avg(tcp_KBps) as avg_tcp_kbps, avg(tcp_eps) as avg_tcp_eps by hostname, guid
+| eval avg_tcp_kbps = round(avg_tcp_kbps, 2)
+| eval avg_tcp_eps = round(avg_tcp_eps, 2)
+| `dmc_rename_forwarder_type(fwdType)`
+| rename hostname as Instance, fwdType as "Forwarder Type", sourceIp as IP, version as "Splunk Version", os as OS, arch as Architecture, guid as GUID, dest_count as "Receiver Count", connection_count as "Connection Count", avg_tcp_kbps as "Average KB/s", avg_tcp_eps as "Average Events/s"
