@@ -1,0 +1,75 @@
+<dashboard theme="dark">
+  <label>Collectd Troubleshoot</label>
+  <row>
+    <panel>
+      <title>knpdb11 write_splunk errors</title>
+      <event>
+        <title>this week</title>
+        <search>
+          <query>index="*np" host="knpdb11" sourcetype="syslog" eventtype=nix_errors write_splunk</query>
+          <earliest>-7d@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">5</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">none</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">raw</option>
+      </event>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>kdcprdsplunk01 HEC errors</title>
+      <table>
+        <title>this week</title>
+        <search>
+          <query>index=_internal source=*splunkd.log HttpInputDataHandler ERROR | stats values(_raw) by _time host</query>
+          <earliest>-7d@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>5m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>kdcprdsplunk01 HEC Errors</title>
+      <table>
+        <title>realtime</title>
+        <search>
+          <query>index=_internal source=*splunkd.log* log_level=ERROR OR log_level=DEBUG component=HttpInputDataHandler reply=* | eval response_to_client=case(reply=="0","success",reply=="1","Token disabled",reply=="2","Token is required",reply=="3","Invalid authorization",reply=="4","Invalid token",reply=="5","No data",reply=="6","Invalid data format",reply=="7","Incorrect index",reply=="9","Server is busy",reply=="10","Data channel is missing",reply=="11","Invalid data channel",reply=="12","Event field is required",reply=="13","Event field cannot be blank",reply=="14","ACK is disabled",reply=="15","Error in handling indexed fields",reply=="16","Query string authorization is not enabled",reply=="17","HEC is healthy",reply=="18","HEC is unhealthy, queues are full",reply=="19","HEC is unhealthy, ack service unavailable",reply=="20","Hec is unhealthy, queues are full, ack service unavailable") | stats count by host name channel source_IP response_to_client reply | rename host as "HEC Receiver" source_IP as "HEC client"</query>
+          <earliest>rt</earliest>
+          <latest>rt</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

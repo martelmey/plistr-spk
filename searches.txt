@@ -1,6 +1,14 @@
 https://docs.splunk.com/Documentation/Splunk/8.0.5/SearchReference/Multikv
 https://community.splunk.com/t5/Monitoring-Splunk/Create-Splunk-Storage-Disk-Space-Capacity-Alarm-Alert/td-p/317095
 
+index=_internal source=*splunkd.log HttpInputDataHandler ERROR
+| stats values(_raw) by _time host
+
+index=_internal source=*splunkd.log* log_level=ERROR OR log_level=DEBUG component=HttpInputDataHandler reply=*
+| eval response_to_client=case(reply=="0","success",reply=="1","Token disabled",reply=="2","Token is required",reply=="3","Invalid authorization",reply=="4","Invalid token",reply=="5","No data",reply=="6","Invalid data format",reply=="7","Incorrect index",reply=="9","Server is busy",reply=="10","Data channel is missing",reply=="11","Invalid data channel",reply=="12","Event field is required",reply=="13","Event field cannot be blank",reply=="14","ACK is disabled",reply=="15","Error in handling indexed fields",reply=="16","Query string authorization is not enabled",reply=="17","HEC is healthy",reply=="18","HEC is unhealthy, queues are full",reply=="19","HEC is unhealthy, ack service unavailable",reply=="20","Hec is unhealthy, queues are full, ack service unavailable")
+| stats count by host name channel source_IP response_to_client reply
+| rename host as "HEC Receiver" source_IP as "HEC client"
+
 index="db_ps" OR index="os_evt_ps" host="kdcps-db10"
 | chart count by source
 
@@ -21,7 +29,9 @@ index="db_np" OR index="os_evt_np" host="knpdb11" sourcetype="df"
 index="db_np" OR index="os_evt_np" host="knpdb11" sourcetype=df
 | multikv fields Filesystem Type Size Used Avail UsePct MountedOn
 | convert auto(UsePct)
-| where UsePct>90 AND MountedOn="/u01"
+| where MountedOn="/u01"
+
+index="*np" host="knpdb11" sourcetype="syslog" eventtype=nix_errors
 
 `dmc_get_forwarder_tcpin` hostname=knpdb11
 | eval source_uri = hostname.":".sourcePort

@@ -18,3 +18,14 @@ https://docs.splunk.com/Documentation/AddonBuilder/3.0.2/UserGuide/BeforeYouBegi
 
 Python strptime():
 https://www.journaldev.com/23365/python-string-to-datetime-strptime
+
+StatsD:
+https://github.com/statsd/statsd
+https://codeascraft.com/2011/02/15/measure-anything-measure-everything/
+
+SPL:
+https://docs.splunk.com/Documentation/Splunk/8.0.5/SearchReference/CommonStatsFunctions
+https://docs.splunk.com/Documentation/Splunk/8.0.5/Metrics/GetMetricsInStatsd
+
+HTTPInputDataHandler
+https://community.splunk.com/t5/Getting-Data-In/HTTP-Event-Collector-Getting-error-quot-HttpInputDataHandler/td-p/463905

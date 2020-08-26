@@ -25,8 +25,8 @@ collectdconf() {
     echo "$ANNOUNCE Writing collectd.conf..."
     cp $CONFDIR/collectd.conf $CONFDIR/collectd.conf.old
     (
-        echo "Hostname  '$HOSTNAME'"
-        echo "BaseDir   '$BASEDIR'"
+        echo 'Hostname  "$HOSTNAME"'
+        echo 'BaseDir   "$BASEDIR"'
 #        echo "PIDFile   '/opt/run/collectd.pid'"
         echo "PluginDir '$PLUGINDIR'"
         echo "LoadPlugin syslog"
@@ -40,11 +40,11 @@ collectdconf() {
         echo "LoadPlugin cpu"
 #        echo "LoadPlugin df"
 #        echo "LoadPlugin disk"
-        echo "LoadPlugin interface"
-        echo "LoadPlugin load"
-        echo "LoadPlugin memory"
+#        echo "LoadPlugin interface"
+#        echo "LoadPlugin load"
+#        echo "LoadPlugin memory"
 #        echo "LoadPlugin network"
-        echo "LoadPlugin nfs"
+#        echo "LoadPlugin nfs"
         echo "LoadPlugin write_splunk"
         echo "<Plugin cpu>"
         echo "    ReportByCpu true"
@@ -54,22 +54,22 @@ collectdconf() {
         echo "    ReportGuestState false"
         echo "    SubtractGuestState true"
         echo "</Plugin>"
-        echo "<Plugin interface>"
-        echo "    Interface 'eno1'"
-        echo "    IgnoreSelected false"
-        echo "    ReportInactive true"
-        echo "    UniqueName false"
-        echo "</Plugin>"
-        echo "<Plugin load>"
-        echo "    ReportRelative true"
-        echo "</Plugin>"
-        echo "<Plugin memory>"
-        echo "    ValuesAbsolute true"
-        echo "    ValuesPercentage false"
-        echo "</Plugin>"
-        echo "<Plugin nfs>"
-        echo "    ReportV4 true"
-        echo "</Plugin>"
+#        echo "<Plugin interface>"
+#        echo "    Interface 'eno1'"
+#        echo "    IgnoreSelected false"
+#        echo "    ReportInactive true"
+#        echo "    UniqueName false"
+#        echo "</Plugin>"
+#        echo "<Plugin load>"
+#        echo "    ReportRelative true"
+#        echo "</Plugin>"
+#        echo "<Plugin memory>"
+#        echo "    ValuesAbsolute true"
+#        echo "    ValuesPercentage false"
+#        echo "</Plugin>"
+#        echo "<Plugin nfs>"
+#        echo "    ReportV4 true"
+#        echo "</Plugin>"
         echo "<Plugin write_splunk>"
         echo "    Dimension 'key:value'"
         echo "    Port '8088'"
@@ -82,7 +82,7 @@ collectdconf() {
         echo "    Verifyssl false"
         echo "    SplunkMetricTransform true"
 #        echo "    DiskAsDimensions true"
-        echo "    InterfaceAsDimensions true"
+#        echo "    InterfaceAsDimensions true"
         echo "    CpuAsDimensions true"
 #        echo "    DfAsDimensions true"
         echo "    StoreRates true"
@@ -98,9 +98,12 @@ collectdconf() {
 collectd() {
     ANNOUNCE="[COLLECTD - INSTALL] "
         # Check for correct repos
-    TAR="collectd_write-splunk_sparc.tar.gz"
+    TAR="spkcollectd_sparc_2.tar.gz"
     MANIFEST="/export/pkgs/splunk/spkcollectd.xml"
     METHOD="/export/pkgs/splunk/svc-spkcollectd"
+    CONFIG="/opt/collectd/etc/collectd.conf"
+    PIDFILE="/opt/collectd/run/collectdmon.pid"
+    DAEMON="/opt/collectd/sbin/collectdmon"
     if pkg publisher | grep -q support || pkg publisher | grep -q release ; then
             # Check for & install deps
         declare -a DEPS=(
@@ -137,13 +140,31 @@ collectd() {
         rm -f $TAR
             # Build config
         collectdconf 1
-            # Create SMF service
-        echo "$ANNOUNCE Creating SMF service."
+            # Collectd startup test
+        echo "$ANNOUNCE Starting collectd."
         sleep 2
-        cp -f $METHOD /lib/svc/method
-        chmod +x /lib/svc/method/svc-spkcollectd
-        cp -f $MANIFEST /lib/svc/manifest/network
-        svcadm restart manifest-import
+        cd /opt/collectd/sbin
+        ./collectd -T
+        if [ $? -ne 0 ]; then
+            $PASSING=0
+            while [ $PASSING -eq 0 ]
+            do
+                "$ANNOUNCE Startup failed. Edit config? [y/n]: " VIEWCHOICE
+                if [ "$VIEWCHOICE" == y ]; then
+                    vi "$CONFIG"
+                    ./collectd -T
+                    if [ $? != 0 ]; then
+                        $PASSING=0
+                    else
+                        $PASSING=1
+                    fi
+                fi
+            done
+        else
+            "$ANNOUNCE Startup test passed; starting collectd..."
+            $DAEMON -P $PIDFILE -- -C $CONFIG
+            ps -ef | grep collectdmon | grep -v status | grep -v grep
+        fi   
     else
         echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
     fi
