@@ -14,97 +14,17 @@ usage() {
 
 HOSTNAME=$(hostname)
 
-collectdconf() {
-    CONFDIR="/opt/collectd/etc"
-    PLUGINDIR="/opt/collectd/lib/collectd"
-    LOGDIR="/opt/collectd/var/log"
-    BASEDIR="/opt/lib/collectd"
-
-    ANNOUNCE="[COLLECTD - CONFIG] "
-    touch $LOGDIR/collectd.log
-    echo "$ANNOUNCE Writing collectd.conf..."
-    cp $CONFDIR/collectd.conf $CONFDIR/collectd.conf.old
-    (
-        echo 'Hostname  "$HOSTNAME"'
-        echo 'BaseDir   "$BASEDIR"'
-#        echo "PIDFile   '/opt/run/collectd.pid'"
-        echo "PluginDir '$PLUGINDIR'"
-        echo "LoadPlugin syslog"
-        echo "LoadPlugin logfile"
-        echo "<Plugin logfile>"
-        echo "    LogLevel info"
-        echo "    File $LOGDIR/collectd.log"
-        echo "    Timestamp true"
-        echo "    PrintSeverity false"
-        echo "</Plugin>"
-        echo "LoadPlugin cpu"
-#        echo "LoadPlugin df"
-#        echo "LoadPlugin disk"
-#        echo "LoadPlugin interface"
-#        echo "LoadPlugin load"
-#        echo "LoadPlugin memory"
-#        echo "LoadPlugin network"
-#        echo "LoadPlugin nfs"
-        echo "LoadPlugin write_splunk"
-        echo "<Plugin cpu>"
-        echo "    ReportByCpu true"
-        echo "    ReportByState true"
-        echo "    ValuesPercentage false"
-        echo "    ReportNumCpu false"
-        echo "    ReportGuestState false"
-        echo "    SubtractGuestState true"
-        echo "</Plugin>"
-#        echo "<Plugin interface>"
-#        echo "    Interface 'eno1'"
-#        echo "    IgnoreSelected false"
-#        echo "    ReportInactive true"
-#        echo "    UniqueName false"
-#        echo "</Plugin>"
-#        echo "<Plugin load>"
-#        echo "    ReportRelative true"
-#        echo "</Plugin>"
-#        echo "<Plugin memory>"
-#        echo "    ValuesAbsolute true"
-#        echo "    ValuesPercentage false"
-#        echo "</Plugin>"
-#        echo "<Plugin nfs>"
-#        echo "    ReportV4 true"
-#        echo "</Plugin>"
-        echo "<Plugin write_splunk>"
-        echo "    Dimension 'key:value'"
-        echo "    Port '8088'"
-        echo "    Token '993f234d-e1e1-424f-a007-177c20566d3c'"
-        echo "    Server '192.168.60.211'"
-        echo "    Batchsize 1024"
-        echo "    Buffersize 1048576"
-        echo "    PostTimeout 30"
-        echo "    Ssl false"
-        echo "    Verifyssl false"
-        echo "    SplunkMetricTransform true"
-#        echo "    DiskAsDimensions true"
-#        echo "    InterfaceAsDimensions true"
-        echo "    CpuAsDimensions true"
-#        echo "    DfAsDimensions true"
-        echo "    StoreRates true"
-        echo "    UseUdp false"
-        echo "</Plugin>"
-    )>$CONFDIR/collectd.conf
-    read -p "$ANNOUNCE View collectd.conf now? [y/n]: " VIEWCHOICE
-    if [ "$VIEWCHOICE" == y ]; then
-        less "$CONFDIR"/collectd.conf
-    fi
-}
-
 collectd() {
     ANNOUNCE="[COLLECTD - INSTALL] "
         # Check for correct repos
-    TAR="spkcollectd_sparc_2.tar.gz"
-    MANIFEST="/export/pkgs/splunk/spkcollectd.xml"
-    METHOD="/export/pkgs/splunk/svc-spkcollectd"
-    CONFIG="/opt/collectd/etc/collectd.conf"
+    TAR="spkcollectd_sparc_3.tar.gz"
+    METHOD="/opt/collectd/sbin/collectdsvc.sh"
+    CONFIG_STOCK="/export/pkgs/splunk/collectd_stock.conf" ## collectd_working_knpdb11.conf
+    CONFIG_LOCAL="/opt/collectd/etc/collectd.conf"
     PIDFILE="/opt/collectd/run/collectdmon.pid"
     DAEMON="/opt/collectd/sbin/collectdmon"
-    if pkg publisher | grep -q support || pkg publisher | grep -q release ; then
+    LOGDIR="/opt/collectd/var/log"
+    #if pkg publisher | grep -q support || pkg publisher | grep -q release ; then
             # Check for & install deps
         declare -a DEPS=(
             "developer/base-developer-utilities"
@@ -123,7 +43,7 @@ collectd() {
                 pkg install $DEP
             else
                 echo "$ANNOUNCE $DEP already installed, skipping."
-                sleep 2
+                sleep 1
             fi
         done
             # Begin installation
@@ -138,36 +58,16 @@ collectd() {
         cp "$INSTALL_HOME"/"$TAR" .
         tar -zxvf $TAR
         rm -f $TAR
-            # Build config
-        collectdconf 1
-            # Collectd startup test
+        touch $LOGDIR/collectd.log
+        cp $CONFIG_STOCK $CONFIG_LOCAL
+            # conf adjustments here, before startup
         echo "$ANNOUNCE Starting collectd."
         sleep 2
-        cd /opt/collectd/sbin
-        ./collectd -T
-        if [ $? -ne 0 ]; then
-            $PASSING=0
-            while [ $PASSING -eq 0 ]
-            do
-                "$ANNOUNCE Startup failed. Edit config? [y/n]: " VIEWCHOICE
-                if [ "$VIEWCHOICE" == y ]; then
-                    vi "$CONFIG"
-                    ./collectd -T
-                    if [ $? != 0 ]; then
-                        $PASSING=0
-                    else
-                        $PASSING=1
-                    fi
-                fi
-            done
-        else
-            "$ANNOUNCE Startup test passed; starting collectd..."
-            $DAEMON -P $PIDFILE -- -C $CONFIG
-            ps -ef | grep collectdmon | grep -v status | grep -v grep
-        fi   
-    else
-        echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
-    fi
+        $DAEMON -P $PIDFILE -- -C $CONFIG
+        ps -ef | grep collectdmon | grep -v status | grep -v grep
+    #else
+#        echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
+    #fi
 }
 
 addoraclepermitcron() {

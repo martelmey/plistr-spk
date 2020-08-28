@@ -29,3 +29,7 @@ https://docs.splunk.com/Documentation/Splunk/8.0.5/Metrics/GetMetricsInStatsd
 
 HTTPInputDataHandler
 https://community.splunk.com/t5/Getting-Data-In/HTTP-Event-Collector-Getting-error-quot-HttpInputDataHandler/td-p/463905
+
+SAI Metrics
+https://docs.splunk.com/Documentation/InfraApp/2.2.0/Admin/ManageAgents
+https://docs.splunk.com/Documentation/InfraApp/2.2.0/Admin/collectd

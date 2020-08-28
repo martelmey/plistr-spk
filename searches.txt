@@ -1,6 +1,12 @@
 https://docs.splunk.com/Documentation/Splunk/8.0.5/SearchReference/Multikv
 https://community.splunk.com/t5/Monitoring-Splunk/Create-Splunk-Storage-Disk-Space-Capacity-Alarm-Alert/td-p/317095
 
+index="_internal" host="knpdb11" ERROR component=ExecProcessor cpu_usage
+| dedup event_message
+
+index="*np" sourcetype="collectd_log"
+| stats values(_raw) by _time host
+
 index=_internal source=*splunkd.log HttpInputDataHandler ERROR
 | stats values(_raw) by _time host
 
@@ -42,3 +48,10 @@ index="*np" host="knpdb11" sourcetype="syslog" eventtype=nix_errors
 | eval avg_tcp_eps = round(avg_tcp_eps, 2)
 | `dmc_rename_forwarder_type(fwdType)`
 | rename hostname as Instance, fwdType as "Forwarder Type", sourceIp as IP, version as "Splunk Version", os as OS, arch as Architecture, guid as GUID, dest_count as "Receiver Count", connection_count as "Connection Count", avg_tcp_kbps as "Average KB/s", avg_tcp_eps as "Average Events/s"
+
+EXPERIMENTAL
+
+index="_internal" host="knpdb11" ERROR
+| rename _raw AS temp cmd_error AS _raw
+| extract pairdelim="\"", kvdelim=":"
+| rename _raw AS cmd_error temp AS _raw
