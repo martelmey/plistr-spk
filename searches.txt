@@ -4,6 +4,9 @@ https://community.splunk.com/t5/Monitoring-Splunk/Create-Splunk-Storage-Disk-Spa
 index="_internal" host="knpdb11" ERROR component=ExecProcessor cpu_usage
 | dedup event_message
 
+index="_internal" host="knpdb11" ERROR component=ExecProcessor df_usage
+| dedup event_message
+
 index="*np" sourcetype="collectd_log"
 | stats values(_raw) by _time host
 

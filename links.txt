@@ -33,3 +33,7 @@ https://community.splunk.com/t5/Getting-Data-In/HTTP-Event-Collector-Getting-err
 SAI Metrics
 https://docs.splunk.com/Documentation/InfraApp/2.2.0/Admin/ManageAgents
 https://docs.splunk.com/Documentation/InfraApp/2.2.0/Admin/collectd
+
+Building collectd:
+https://github.com/collectd/collectd
+https://github.com/splunk/collectd-plugins
