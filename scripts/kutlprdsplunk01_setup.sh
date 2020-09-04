@@ -82,14 +82,14 @@ mkdir -p /export/pkgs
 mount 192.168.61.132:\export/utilities-kdcprd/pkgs /export/pkgs/
 echo "192.168.61.132:\export/utilities-kdcprd/pkgs /export/pkgs/ nfs4 defaults 0 0" >> /etc/fstab
 mkdir /export/npindx && mkdir /export/psindx && mkdir /export/prdindx && mkdir /export/intindx
-mount 192.168.61.132:\export/utilities-kdcprd/pkgs/splunk/npindx /export/npindx/
-echo "192.168.61.132:\export/utilities-kdcprd/splunk/npindx /export/npindx/ nfs4 defaults 0 0" >> /etc/fstab
-mount 192.168.61.132:\export/utilities-kdcprd/pkgs/splunk/psindx /export/psindx/
-echo "192.168.61.132:\export/utilities-kdcprd/splunk/psindx /export/psindx/ nfs4 defaults 0 0" >> /etc/fstab
-mount 192.168.61.132:\export/utilities-kdcprd/pkgs/splunk/prdindx /export/prdindx/
-echo "192.168.61.132:\export/utilities-kdcprd/splunk/prdindx /export/prdindx/ nfs4 defaults 0 0" >> /etc/fstab
-mount 192.168.61.132:\export/utilities-kdcprd/pkgs/splunk/intindx /export/intindx/
-echo "192.168.61.132:\export/utilities-kdcprd/splunk/intindx /export/intindx/ nfs4 defaults 0 0" >> /etc/fstab
+mount 192.168.61.132:\export/utilities-splunk/npindx /export/npindx/
+echo "192.168.61.132:\export/utilities-splunk/npindx /export/npindx/ nfs4 defaults 0 0" >> /etc/fstab
+mount 192.168.61.132:\export/utilities-splunk/psindx /export/psindx/
+echo "192.168.61.132:\export/utilities-splunk/psindx /export/psindx/ nfs4 defaults 0 0" >> /etc/fstab
+mount 192.168.61.132:\export/utilities-splunk/prdindx /export/prdindx/
+echo "192.168.61.132:\export/utilities-splunk/prdindx /export/prdindx/ nfs4 defaults 0 0" >> /etc/fstab
+mount 192.168.61.132:\export/utilities-splunk/intindx /export/intindx/
+echo "192.168.61.132:\export/utilities-splunk/intindx /export/intindx/ nfs4 defaults 0 0" >> /etc/fstab
 chown --recursive splunk:splunk /export/*indx/
 
 ## ==================== spk
@@ -158,3 +158,20 @@ tar -zxvf /export/pkgs/splunk/appsnadons/sunos_serverclass_base.tgz -C /opt/splu
 # Always run after change:
 chown --recursive splunk:splunk /opt/splunk/
 splunk restart
+
+## ==================== temp space fix
+
+mkdir /export/os_evt_np-temp
+mkdir /export/os_evt_np-temp/db
+mkdir /export/os_evt_np-temp/colddb
+mkdir /export/os_evt_np-temp/thaweddb
+
+mkdir /export/db_np-temp
+mkdir /export/db_np-temp/db
+mkdir /export/db_np-temp/colddb
+mkdir /export/db_np-temp/thaweddb
+
+mkdir /export/wls_np-temp
+mkdir /export/wls_np-temp/db
+mkdir /export/wls_np-temp/colddb
+mkdir /export/wls_np-temp/thaweddb

@@ -1,6 +1,12 @@
 https://docs.splunk.com/Documentation/Splunk/8.0.5/SearchReference/Multikv
 https://community.splunk.com/t5/Monitoring-Splunk/Create-Splunk-Storage-Disk-Space-Capacity-Alarm-Alert/td-p/317095
 
+index="_internal" host="knpdb11" ERROR component=ExecProcessor "/proc/"
+| dedup event_message
+
+index="_internal" host="knpdb11" ERROR component=ExecProcessor
+| dedup event_message
+
 index="_internal" host="knpdb11" ERROR component=ExecProcessor cpu_usage
 | dedup event_message
 
@@ -58,3 +64,8 @@ index="_internal" host="knpdb11" ERROR
 | rename _raw AS temp cmd_error AS _raw
 | extract pairdelim="\"", kvdelim=":"
 | rename _raw AS cmd_error temp AS _raw
+
+index="db_np-temp" OR index="os_evt_np-temp" host="knpdb11" sourcetype=df
+| multikv fields Filesystem Type Size Used Avail UsePct MountedOn
+| convert auto(UsePct)
+| where UsePct>75 AND MountedOn="/u01"
