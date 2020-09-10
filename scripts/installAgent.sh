@@ -18,8 +18,10 @@ collectd() {
     ANNOUNCE="[COLLECTD - INSTALL] "
         # Check for correct repos
     TAR="spkcollectd_sparc_3.tar.gz"
-    METHOD="/opt/collectd/sbin/collectdsvc.sh"
-    CONFIG_STOCK="/export/pkgs/splunk/collectd_stock.conf" ## collectd_working_knpdb11.conf
+#    METHOD="/opt/collectd/sbin/collectdsvc.sh"
+    CRONJOB="/opt/collectd/svc/cron-spkcollectd.sh"
+    CRON_DIR="/var/spool/cron/crontabs"
+    CONFIG_STOCK="/export/pkgs/splunk/collectd_stock.conf"
     CONFIG_LOCAL="/opt/collectd/etc/collectd.conf"
     PIDFILE="/opt/collectd/run/collectdmon.pid"
     DAEMON="/opt/collectd/sbin/collectdmon"
@@ -39,7 +41,7 @@ collectd() {
         do
             if ! pkg list $DEP | grep -q i-- ; then
                 echo "$ANNOUNCE $DEP will be installed."
-                sleep 2
+                sleep 1
                 pkg install $DEP
             else
                 echo "$ANNOUNCE $DEP already installed, skipping."
@@ -59,11 +61,28 @@ collectd() {
         tar -zxvf $TAR
         rm -f $TAR
         touch $LOGDIR/collectd.log
-        cp $CONFIG_STOCK $CONFIG_LOCAL
-            # conf adjustments here, before startup
+        cp -f $CONFIG_STOCK $CONFIG_LOCAL
+            # Create cronjob
+        echo "$ANNOUNCE Configuring cronjob for spkcollectd service."
+        sleep 2
+        if [[ ! -f "$CRON_DIR"/root ]]; then
+            echo "$ANNOUNCE No crontab for root found. Creating."
+            sleep 2
+            touch "$CRON_DIR"/root
+        fi
+        chmod +x $CRONJOB
+        if cat "$CRON_DIR"/root | grep -q "cron-spkcollectd.sh" ; then
+            echo "$ANNOUNCE Cronjob for spkcollectd service already present."
+            sleep 2
+        else
+            echo "$ANNOUNCE Adding cronjob for spkcollectd service, every 2 minutes."
+            sleep 2
+            echo "0 0 * * * /opt/collectd/svc/cron-spkcollectd.sh" >> $CRON_DIR/root
+        fi
+            # Startup
         echo "$ANNOUNCE Starting collectd."
         sleep 2
-        $DAEMON -P $PIDFILE -- -C $CONFIG
+        $DAEMON -P $PIDFILE -- -C $CONFIG_LOCAL
         ps -ef | grep collectdmon | grep -v status | grep -v grep
     #else
 #        echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
