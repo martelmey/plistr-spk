@@ -1,8 +1,8 @@
 ##+++ Splunk NP Heavy Forwarder Logical Domain Setup
-##+++ IP address: 192.168.63.241
+##+++ IP address: 192.168.60.70
 ##+++--- Subnet mask: 255.255.255.0
-##+++--- Default gateway: 192.168.63.254
-##+++--- Preferred DNS: 192.168.63.249
+##+++--- Default gateway: 192.168.60.254
+##+++--- Preferred DNS: 192.168.60.251
 ##+++ Domain/Hostname: np.health.local.kutlnpsplunk01
 
 ## ==================== users
@@ -64,3 +64,11 @@ splunk set deploy-poll 192.168.60.211:8089
 splunk add forward-server 192.168.60.211:9997
 cp /opt/splunk/etc/system/default/props.conf /opt/splunk/etc/system/local
 cp /opt/splunk/etc/system/default/transforms.conf /opt/splunk/etc/system/local
+
+## ==================== vlan switch
+
+cp /etc/sysconfig/network-scripts/ifcfg-eth0 /etc/sysconfig/network-scripts/ifcfg-eth0.old
+sed -i 's/IPADDR="192.168.63.241"/IPADDR="192.168.60.70"/g' /etc/sysconfig/network-scripts/ifcfg-eth0
+sed -i 's/GATEWAY="192.168.63.254"/GATEWAY="192.168.60.254"/g' /etc/sysconfig/network-scripts/ifcfg-eth0
+sed -i 's/DNS1="192.168.63.249"/DNS1="192.168.60.251"/g' /etc/sysconfig/network-scripts/ifcfg-eth0
+systemctl restart network

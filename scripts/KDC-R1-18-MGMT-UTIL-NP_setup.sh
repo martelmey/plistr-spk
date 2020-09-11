@@ -1,48 +1,48 @@
 ##+++--- Splunk NP Control Domain Setup
-##+++--- 192.168.63.240
+##+++--- 192.168.60.30
 ##+++--- Subnet mask: 255.255.255.0
-##+++--- Default gateway: 192.168.63.254
-##+++--- Preferred DNS: 192.168.63.249
+##+++--- Default gateway: 192.168.60.254
+##+++--- Preferred DNS: 192.168.60.251
 ##+++--- martel.meyers
 
-## VNC/Jump :  ssh martel.meyers@192.168.63.240 -L 5900:127.0.0.1:5900 -g
+## VNC/Jump :  ssh martel.meyers@192.168.60.30 -L 5900:127.0.0.1:5900 -g
 ## SPK/Jump : ssh martel.meyers@192.168.63.240 -L 8000:127.0.0.1:8000 -g
 ## Local : From=5900(remote) To=127.0.0.1:5900(local) <defaultuser>65.110.171.190:3022
 
 ## ==================== brctl
 
-(
-	echo "DEVICE=br0"
-	echo "TYPE=Bridge"
-	echo "ONBOOT=yes"
-	echo "IPADDR=192.168.63.240"
-	echo "PREFIX=24"
-	echo "GATEWAY=192.168.63.254"
-	echo "NM_CONTROLLED=no"
-	echo "DELAY=0"
-	echo "PEERDNS=no"
-)>/etc/sysconfig/network-scripts/ifcfg-br0
+#(
+#	echo "DEVICE=br0"
+#	echo "TYPE=Bridge"
+#	echo "ONBOOT=yes"
+#	echo "IPADDR=192.168.63.240"
+#	echo "PREFIX=24"
+#	echo "GATEWAY=192.168.63.254"
+#	echo "NM_CONTROLLED=no"
+#	echo "DELAY=0"
+#	echo "PEERDNS=no"
+#)>/etc/sysconfig/network-scripts/ifcfg-br0
 
-(
-	echo "DEVICE=eno1"
-	echo "TYPE=Ethernet"
-	echo "NAME=eno1"
-	echo "ONBOOT=yes"
-	echo "BRIDGE=br0"
-	echo "NM_CONTROLLED=no"
-)>/etc/sysconfig/network-scripts/ifcfg-eno1
+#(
+#	echo "DEVICE=eno1"
+#	echo "TYPE=Ethernet"
+#	echo "NAME=eno1"
+#	echo "ONBOOT=yes"
+#	echo "BRIDGE=br0"
+#	echo "NM_CONTROLLED=no"
+#)>/etc/sysconfig/network-scripts/ifcfg-eno1
 
-(
-	echo "DEVICE=br1"
-	echo "TYPE=Bridge"
-	echo "ONBOOT=yes"
-	echo "IPADDR=192.168.57.240"
-	echo "PREFIX=24"
-	echo "GATEWAY=192.168.63.254"
-	echo "NM_CONTROLLED=no"
-	echo "DELAY=0"
-	echo "PEERDNS=no"
-)>/etc/sysconfig/network-scripts/ifcfg-br1
+#(
+#	echo "DEVICE=br1"
+#	echo "TYPE=Bridge"
+#	echo "ONBOOT=yes"
+#	echo "IPADDR=192.168.57.240"
+#	echo "PREFIX=24"
+#	echo "GATEWAY=192.168.63.254"
+#	echo "NM_CONTROLLED=no"
+#	echo "DELAY=0"
+#	echo "PEERDNS=no"
+#)>/etc/sysconfig/network-scripts/ifcfg-br1
 
 (
 	echo "DEVICE=enp59s0f0"
@@ -92,7 +92,7 @@ firewall-cmd --zone=public --permanent --add-port=5900/tcp
 
 ## root : hialplis_N95
 virt-install --name=kutlnpsplunk01 \
---network bridge=br0 \
+--network bridge=br2 \
 --ram=32000 \
 --vcpus=6 \
 --disk path=/vms/kutlnpsplunk01,size=80 \

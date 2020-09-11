@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
 INSTALL_HOME="/export/pkgs/splunk"
+HOSTNAME=$(hostname)
 
 usage() {
     echo "UNIVERSAL SPLUNK INSTALLER"
@@ -16,9 +17,9 @@ HOSTNAME=$(hostname)
 
 collectd() {
     ANNOUNCE="[COLLECTD - INSTALL] "
-        # Check for correct repos
-    TAR="spkcollectd_sparc_3.tar.gz"
-#    METHOD="/opt/collectd/sbin/collectdsvc.sh"
+    TAR="spkcollectd_sparc_final.tar.gz"
+    METHOD_STOCK="/export/pkgs/splunk/collectdsvc.sh"
+    METHOD_LOCAL="/opt/collectd/svc/collectdsvc.sh"
     CRONJOB="/opt/collectd/svc/cron-spkcollectd.sh"
     CRON_DIR="/var/spool/cron/crontabs"
     CONFIG_STOCK="/export/pkgs/splunk/collectd_stock.conf"
@@ -26,8 +27,20 @@ collectd() {
     PIDFILE="/opt/collectd/run/collectdmon.pid"
     DAEMON="/opt/collectd/sbin/collectdmon"
     LOGDIR="/opt/collectd/var/log"
+            # Check for presence of /export/pkgs/splunk
+    if [ ! -d /export/pkgs ]; then
+        echo "$ANNOUNCE Creating /export/pkgs."
+        mkdir -p /export/pkgs
+    fi
+    if [ ! -d $INSTALL_HOME ]; then
+        echo "$ANNOUNCE Mounting /export/pkgs/splunk."
+        mount 192.168.61.132:\export/utilities-kdcprd/pkgs /export/pkgs/
+    fi
+            # Check for correct repos
     #if pkg publisher | grep -q support || pkg publisher | grep -q release ; then
             # Check for & install deps
+        echo "$ANNOUNCE Checking dependencies."
+        sleep 2
         declare -a DEPS=(
             "developer/base-developer-utilities"
             "library/libidn2" "library/libssh2" "library/libxml2"
@@ -61,7 +74,53 @@ collectd() {
         tar -zxvf $TAR
         rm -f $TAR
         touch $LOGDIR/collectd.log
+        cp -f $METHOD_STOCK $METHOD_LOCAL
+        chmod +x $METHOD_LOCAL
         cp -f $CONFIG_STOCK $CONFIG_LOCAL
+            # Generate dims
+        echo "<Plugin write_splunk>" >> $CONFIG_LOCAL
+            # Env dims
+        if $HOSTNAME | grep dev-*; then
+            echo 'Dimension "env:np-dev"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep test-*; then
+            echo 'Dimension "env:np-test"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep kdcps-*; then
+            echo 'Dimension "env:ps"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep kdcprd-*; then
+            echo 'Dimension "env:prd"' >> $CONFIG_LOCAL
+        fi
+            # App dims
+        if $HOSTNAME | grep *hial*; then
+            echo 'Dimension "app:hial"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep *posia*; then
+            echo 'Dimension "app:posia"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep *fam*; then
+            echo 'Dimension "app:fam"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep *cmu*; then
+            echo 'Dimension "app:cmu"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep *idm*; then
+            echo 'Dimension "app:idm"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep *lab*; then
+            echo 'Dimension "app:lab"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep *cache*; then
+            echo 'Dimension "app:cache"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep *ohs*; then
+            echo 'Dimension "app:ohs"' >> $CONFIG_LOCAL
+        elif $HOSTNAME | grep *db*; then
+            echo 'Dimension "app:db"' >> $CONFIG_LOCAL
+        fi
+        (
+            echo '  Port "8088"'
+            echo '  Token "993f234d-e1e1-424f-a007-177c20566d3c"'
+            echo '  Server "192.168.60.211"'
+            echo '  Ssl false'
+            echo '  SplunkMetricTransform true'
+            echo '  DiskAsDimensions true'
+            echo '  InterfaceAsDimensions true'
+            echo '  CpuAsDimensions true'
+            echo '  DfAsDimensions true'
+            echo '</Plugin>'
+        )>>$CONFIG_LOCAL
             # Create cronjob
         echo "$ANNOUNCE Configuring cronjob for spkcollectd service."
         sleep 2
@@ -82,8 +141,8 @@ collectd() {
             # Startup
         echo "$ANNOUNCE Starting collectd."
         sleep 2
-        $DAEMON -P $PIDFILE -- -C $CONFIG_LOCAL
-        ps -ef | grep collectdmon | grep -v status | grep -v grep
+        $METHOD_LOCAL start
+        $METHOD_LOCAL status
     #else
 #        echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
     #fi
@@ -283,10 +342,10 @@ install() {
     fi
     read -p "Choose: NP or PSPR     [np/pspr]: "  ENV
     if [[ "$ENV" == "np" ]]; then
-        SPLUNK_CMD_FORWARD="splunk add forward-server 192.168.63.241:9997"
+        SPLUNK_CMD_FORWARD="splunk add forward-server 192.168.60.70:9997"
         SPLUNK_STR_GROUP1="defaultGroup = np-heavy-forwarder"
         SPLUNK_STR_GROUP2="[tcpout:np-heavy-forwarder]"
-        SPLUNK_STR_SERVER="server = 192.168.63.241:9997"
+        SPLUNK_STR_SERVER="server = 192.168.60.70:9997"
     elif [[ "$ENV" == "pspr" ]]; then
         SPLUNK_CMD_FORWARD="splunk add forward-server 192.168.60.213:9997"
         SPLUNK_STR_GROUP1="defaultGroup = pspr-heavy-forwarder"
@@ -312,7 +371,7 @@ install() {
         #Solaris install
     if [[ "$OS" == "s" ]]; then
         id -u splunk
-        if [[ $? != 0 ]]; then
+        if [[ $? -gt 0 ]]; then
             echo "$ANNOUNCE No splunk user found. Creating."
             sleep 2
             useradd splunk
