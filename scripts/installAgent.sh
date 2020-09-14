@@ -39,28 +39,28 @@ collectd() {
             # Check for correct repos
     #if pkg publisher | grep -q support || pkg publisher | grep -q release ; then
             # Check for & install deps
-        echo "$ANNOUNCE Checking dependencies."
-        sleep 2
-        declare -a DEPS=(
-            "developer/base-developer-utilities"
-            "library/libidn2" "library/libssh2" "library/libxml2"
-            "library/nghttp2" "library/security/libgpg-error"
-            "library/security/openssl" "library/zlib" "security/kerberos-5"
-            "system/library/libpcap" "system/library/math" "system/library/security/libgcrypt"
-            "system/library" "system/management/snmp/net-snmp"
-            "system/network/ldap/openldap" "web/curl"
-            )
-        for DEP in "${DEPS[@]}"
-        do
-            if ! pkg list $DEP | grep -q i-- ; then
-                echo "$ANNOUNCE $DEP will be installed."
-                sleep 1
-                pkg install $DEP
-            else
-                echo "$ANNOUNCE $DEP already installed, skipping."
-                sleep 1
-            fi
-        done
+#        echo "$ANNOUNCE Checking dependencies."
+#        sleep 2
+#        declare -a DEPS=(
+#            "developer/base-developer-utilities"
+#            "library/libidn2" "library/libssh2" "library/libxml2"
+#            "library/nghttp2" "library/security/libgpg-error"
+#            "library/security/openssl" "library/zlib" "security/kerberos-5"
+#            "system/library/libpcap" "system/library/math" "system/library/security/libgcrypt"
+#            "system/library" "system/management/snmp/net-snmp"
+#            "system/network/ldap/openldap" "web/curl"
+#            )
+#        for DEP in "${DEPS[@]}"
+#        do
+#            if ! pkg list $DEP | grep -q i-- ; then
+#                echo "$ANNOUNCE $DEP will be installed."
+#                sleep 1
+#                pkg install $DEP
+#            else
+#                echo "$ANNOUNCE $DEP already installed, skipping."
+#                sleep 1
+#            fi
+#        done
             # Begin installation
         if [[ -d /opt/collectd ]]; then
             echo "$ANNOUNCE Existing install found. Removing."
@@ -80,34 +80,36 @@ collectd() {
             # Generate dims
         echo "<Plugin write_splunk>" >> $CONFIG_LOCAL
             # Env dims
-        if $HOSTNAME | grep dev-*; then
-            echo 'Dimension "env:np-dev"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep test-*; then
-            echo 'Dimension "env:np-test"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep kdcps-*; then
-            echo 'Dimension "env:ps"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep kdcprd-*; then
-            echo 'Dimension "env:prd"' >> $CONFIG_LOCAL
+        if [[ $(hostname) = dev-* ]]; then
+            echo '  Dimension "env:np-dev"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = *np* ]]; then
+            echo '  Dimension "env:np"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = test-* ]]; then
+            echo '  Dimension "env:np-test"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = kdcps-* ]]; then
+            echo '  Dimension "env:ps"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = kdcprd-* ]]; then
+            echo '  Dimension "env:prd"' >> $CONFIG_LOCAL
         fi
             # App dims
-        if $HOSTNAME | grep *hial*; then
-            echo 'Dimension "app:hial"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep *posia*; then
+        if [[ $(hostname) = *hial* ]]; then
+            echo '  Dimension "app:hial"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = *posia* ]]; then
             echo 'Dimension "app:posia"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep *fam*; then
-            echo 'Dimension "app:fam"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep *cmu*; then
-            echo 'Dimension "app:cmu"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep *idm*; then
-            echo 'Dimension "app:idm"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep *lab*; then
-            echo 'Dimension "app:lab"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep *cache*; then
-            echo 'Dimension "app:cache"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep *ohs*; then
-            echo 'Dimension "app:ohs"' >> $CONFIG_LOCAL
-        elif $HOSTNAME | grep *db*; then
-            echo 'Dimension "app:db"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = *fam* ]]; then
+            echo '  Dimension "app:fam"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = *cmu* ]]; then
+            echo '  Dimension "app:cmu"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = *idm* ]]; then
+            echo '  Dimension "app:idm"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = *lab* ]]; then
+            echo '  Dimension "app:lab"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = *cache* ]]; then
+            echo '  Dimension "app:cache"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = *ohs* ]]; then
+            echo '  Dimension "app:ohs"' >> $CONFIG_LOCAL
+        elif [[ $(hostname) = *db* ]]; then
+            echo '  Dimension "app:db"' >> $CONFIG_LOCAL
         fi
         (
             echo '  Port "8088"'
@@ -143,6 +145,7 @@ collectd() {
         sleep 2
         $METHOD_LOCAL start
         $METHOD_LOCAL status
+#        $METHOD_LOCAL tail
     #else
 #        echo "$ANNOUNCE Please configure a valid IPS publisher first. Quitting."
     #fi

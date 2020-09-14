@@ -1,25 +1,27 @@
 () = ufw installed
 (c) = collectd installed
+(cf) = collectd fix applied
+(cd) = collectd dims gen'd
 (wls) = wls feature support
 
 ===: NP
 
-(c)knpdb11		        :	192.168.63.21
-(c)dev-hial1    	    :	192.168.63.23
-(c)dev-posia1	        :	192.168.63.24
-(c)test-hial1           :   192.168.63.25
-(c)test-hial2           :   192.168.63.27
-(c)test-posia2          :   192.168.63.28
-(c)dev-hial-fam1	    :	192.168.63.29
-(c)dev-cmu-fam1	        :	192.168.63.33
-(c)dev-idm1		        :	192.168.63.34
-(c)test-hial-fam1       :   192.168.63.35
-(c)test-cmu-fam1        :   192.168.63.36
-(c)test-idm1            :   192.168.63.37
-(c)dev-cache1           :   192.168.63.38
-(c)dev-lab1		        :	192.168.63.39
-(c)test-cache1          :   192.168.63.44
-(c)test-lab1            :   192.168.63.45
+(cd)knpdb11		        :	192.168.63.21
+(cd)dev-hial1    	    :	192.168.63.23
+(cd)dev-posia1	        :	192.168.63.24
+(cd)test-hial1           :   192.168.63.25
+(cd)test-hial2           :   192.168.63.27
+(cd)test-posia2          :   192.168.63.28
+(cd)dev-hial-fam1	    :	192.168.63.29
+(cd)dev-cmu-fam1	        :	192.168.63.33
+(cd)dev-idm1		        :	192.168.63.34
+(cd)test-hial-fam1       :   192.168.63.35
+(cd)test-cmu-fam1        :   192.168.63.36
+(cd)test-idm1            :   192.168.63.37
+(cd)dev-cache1           :   192.168.63.38
+(cd)dev-lab1		        :	192.168.63.39
+(cd)test-cache1          :   192.168.63.44
+(cd)test-lab1            :   192.168.63.45
 {log files
     diag/rdbms/hlddev /incident /trace /alert
     diag/rdbms/hlddev2 /incident /trace /alert
@@ -69,7 +71,7 @@ knpappdm03      :   192.168.63.60
 
 ===: PS
 
-()kdcps-db00				: 	192.168.62.25
+(cd)kdcps-db00				: 	192.168.62.25
 {log files
     admin/hldps /adump
     admin/ladps /adump
@@ -87,28 +89,28 @@ knpappdm03      :   192.168.63.60
     diag/tnslsnr/kdcps-db00/kdc_int_ps
     diag/tnslsnr/kdcps-db00/lis_mgmt1
 }
-()kdcps-db10				: 	192.168.62.26
-()kdcps-hial-ohs1		    :	192.168.62.38
-()kdcps-hial-ohs2		    :	192.168.62.39
-()(wls)kdcps-hial-wls1		:	192.168.62.40
-()(wls)kdcps-hial-wls2		:	192.168.62.41
-()kdcps-posia-ohs1	        :	192.168.62.42
-()kdcps-posia-ohs2	        :	192.168.62.43
-()(wls)kdcps-posia-wls1	    :	192.168.62.44
-()(wls)kdcps-posia-wls2	    :	192.168.62.45
-()kdcps-hial-d1    	        :	192.168.62.46
-()kdcps-hial-d2    	        :	192.168.62.47
-()kdcps-cmu-d1	            :	192.168.62.48
-()kdcps-cmu-d2	            :	192.168.62.49
-()kdcps-hial-fam1	    	:	192.168.62.50
-()kdcps-hial-fam2		    :	192.168.62.51
-()kdcps-cmu-fam1		    :	192.168.62.52
-()kdcps-cmu-fam2		    :	192.168.62.53
-()kdcps-hial-idm1		    :	192.168.62.54
-()kdcps-cache1	    	    :	192.168.62.56
-()kdcps-cache2		        :	192.168.62.57
-()kdcps-lab1			    :	192.168.62.58
-()kdcps-lab2			    :	192.168.62.59
+(c)kdcps-db10				: 	192.168.62.26
+(c)kdcps-hial-ohs1		    :	192.168.62.38
+(c)kdcps-hial-ohs2		    :	192.168.62.39
+(c)(wls)kdcps-hial-wls1		:	192.168.62.40
+(c)(wls)kdcps-hial-wls2		:	192.168.62.41
+(c)kdcps-posia-ohs1	        :	192.168.62.42
+(c)kdcps-posia-ohs2	        :	192.168.62.43
+(c)(wls)kdcps-posia-wls1	    :	192.168.62.44
+(c)(wls)kdcps-posia-wls2	    :	192.168.62.45
+(c)kdcps-hial-d1    	        :	192.168.62.46
+(c)kdcps-hial-d2    	        :	192.168.62.47
+(c)kdcps-cmu-d1	            :	192.168.62.48
+(c)kdcps-cmu-d2	            :	192.168.62.49
+(c)kdcps-hial-fam1	    	:	192.168.62.50
+(c)kdcps-hial-fam2		    :	192.168.62.51
+(c)kdcps-cmu-fam1		    :	192.168.62.52
+(c)kdcps-cmu-fam2		    :	192.168.62.53
+(c)kdcps-hial-idm1		    :	192.168.62.54
+(c)kdcps-cache1	    	    :	192.168.62.56
+(c)kdcps-cache2		        :	192.168.62.57
+(c)kdcps-lab1			    :	192.168.62.58
+(c)kdcps-lab2			    :	192.168.62.59
 
 ===: PROD
 
@@ -137,8 +139,8 @@ kdcprd-chassis0-sp1         : 192.168.61.22
 kdcprd-chassis0-host0-spm   : 192.168.61.23
 kdcprd-chassis0-host1-spm   : 192.168.61.24
 
-()kdcprd-db00               : 192.168.61.25
-()kdcprd-db10               : 192.168.61.26
+(c)kdcprd-db00               : 192.168.61.25
+(c)kdcprd-db10               : 192.168.61.26
 kdcprd-app01                : 192.168.61.27
 kdcprd-app11                : 192.168.61.28
 kdcprd-app02                : 192.168.61.29

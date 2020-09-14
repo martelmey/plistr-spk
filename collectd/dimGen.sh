@@ -1,8 +1,12 @@
 #!/usr/bin/bash
 
-# for np
+# For NP, update
+# existing collectd;
+# Afterwards integrate
+# w/ installAgent, &
+# rollout to PS & PRD
 
-#hostname=$(hostname)
+hostname=$(hostname)
 CONFIG_LOCAL="/opt/collectd/etc/collectd.conf"
 METHOD_LOCAL="/opt/collectd/svc/collectdsvc.sh"
 
@@ -12,41 +16,36 @@ cp /export/pkgs/splunk/collectd_stock.conf $CONFIG_LOCAL
 
 echo "<Plugin write_splunk>" >> $CONFIG_LOCAL
     # Env dims
-echo "$HOSTNAME" | grep dev-*
-if $? ! -gt 0; then
-    echo 'Dimension "env:np-dev"' >> $CONFIG_LOCAL
-fi
-echo "$HOSTNAME" | grep test-*
-if $? ! -gt 0; then
-    echo 'Dimension "env:np-test"' >> $CONFIG_LOCAL
-fi
-echo "$HOSTNAME" | grep kdcps-*
-if $? ! -gt 0; then
-    echo 'Dimension "env:ps"' >> $CONFIG_LOCAL
-fi
-echo "$HOSTNAME" | grep kdcprd-*
-if $? ! -gt 0; then
-    echo 'Dimension "env:prd"' >> $CONFIG_LOCAL
+if [[ $(hostname) = dev-* ]]; then
+    echo '  Dimension "env:np-dev"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = *np* ]]; then
+    echo '  Dimension "env:np"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = test-* ]]; then
+    echo '  Dimension "env:np-test"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = kdcps-* ]]; then
+    echo '  Dimension "env:ps"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = kdcprd-* ]]; then
+    echo '  Dimension "env:prd"' >> $CONFIG_LOCAL
 fi
     # App dims
-if $hostname | grep *hial*; then
-    echo 'Dimension "app:hial"' >> $CONFIG_LOCAL
-elif $hostname | grep *posia*; then
+if [[ $(hostname) = *hial* ]]; then
+    echo '  Dimension "app:hial"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = *posia* ]]; then
     echo 'Dimension "app:posia"' >> $CONFIG_LOCAL
-elif $hostname | grep *fam*; then
-    echo 'Dimension "app:fam"' >> $CONFIG_LOCAL
-elif $hostname | grep *cmu*; then
-    echo 'Dimension "app:cmu"' >> $CONFIG_LOCAL
-elif $hostname | grep *idm*; then
-    echo 'Dimension "app:idm"' >> $CONFIG_LOCAL
-elif $hostname | grep *lab*; then
-    echo 'Dimension "app:lab"' >> $CONFIG_LOCAL
-elif $hostname | grep *cache*; then
-    echo 'Dimension "app:cache"' >> $CONFIG_LOCAL
-elif $hostname | grep *ohs*; then
-    echo 'Dimension "app:ohs"' >> $CONFIG_LOCAL
-elif $hostname | grep *db*; then
-    echo 'Dimension "app:db"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = *fam* ]]; then
+    echo '  Dimension "app:fam"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = *cmu* ]]; then
+    echo '  Dimension "app:cmu"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = *idm* ]]; then
+    echo '  Dimension "app:idm"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = *lab* ]]; then
+    echo '  Dimension "app:lab"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = *cache* ]]; then
+    echo '  Dimension "app:cache"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = *ohs* ]]; then
+    echo '  Dimension "app:ohs"' >> $CONFIG_LOCAL
+elif [[ $(hostname) = *db* ]]; then
+    echo '  Dimension "app:db"' >> $CONFIG_LOCAL
 fi
 (
     echo '  Port "8088"'
@@ -61,5 +60,10 @@ fi
     echo '</Plugin>'
 )>>$CONFIG_LOCAL
 
-#$METHOD_LOCAL start
-#$METHOD_LOCAL status
+if [[ ! -f /opt/collectd/svc/collectdsvc.sh ]]; then
+    cp /export/pkgs/splunk/collectdsvc.sh /opt/collectd/svc/collectdsvc.sh
+    chmod +x /opt/collectd/svc/collectdsvc.sh
+fi
+
+$METHOD_LOCAL restart
+$METHOD_LOCAL status

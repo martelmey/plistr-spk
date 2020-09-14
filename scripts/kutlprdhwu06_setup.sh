@@ -1,11 +1,5 @@
 ##+++--- Splunk PS/PRD Control Domain Setup
-##+++--- 192.168.60.210
-##+++--- Subnet mask: 255.255.255.0
-##+++--- Default gateway: 192.168.60.254
-##+++--- Preferred DNS: 192.168.60.249
-##+++--- Alternate DNS: 192.168.60.248
-##+++--- kutlprdhwu06
-##+++--- R1.18-U6
+##+++--- 192.168.60.210 (eno1)
 ##+++--- April 29 2020
 ##+++--- martel.meyers
 
@@ -114,8 +108,8 @@
 
 ## ==================== yum
 
-mv /etc/yum.conf /etc/yum.conf.old
-cp ../conf/yum.conf /etc/
+cp /etc/yum.conf /etc/yum.conf.old
+echo "proxy=http://192.168.60.250:8008" >> /etc/yum.conf
 yum update
 yum install virt-install
 yum groupinstall "Virtualization Tools"

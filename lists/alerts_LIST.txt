@@ -1,0 +1,24 @@
+Name: Disk Usage:/u01 on knpdb11
+Enabled: Yes
+Created: Sep 4, 2020
+Alert Type: Realtime
+Trigger Condition: Number of Results is > 0 in 1 minute.
+Trigger frequency: {
+    Once for each result
+    Suppress for 1 day
+}
+Actions: {
+    Add to Triggered Alerts
+    Send email {
+        Hialplis.infra@cgi.com, HIAL.PLIS.DB.Support@cgi.com, martel.meyers@cgi.com
+        Priority: High
+        Include trigger condition & time
+    }
+}
+Results Expirary: 7 day(s)
+Search String: {
+    index="db_np-temp" OR index="os_evt_np-temp" host="knpdb11" sourcetype=df
+    | multikv fields Filesystem Type Size Used Avail UsePct MountedOn
+    | convert auto(UsePct)
+    | where UsePct>75 AND MountedOn="/u01"
+}
