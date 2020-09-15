@@ -170,3 +170,19 @@ splunk set deploy-poll 192.168.60.211:8089
 splunk add forward-server 192.168.60.211:9997
 firewall-cmd --zone=public --permanent --add-port=8089/tcp
 firewall-cmd --zone=public --permanent --add-port=9997/tcp
+
+## ==================== temp.indxs
+
+chmod --recursive g+rwx /var
+usermod -G root,qemu,kvm qemu
+mkdir /var/log/audit/splunk-expansion
+setfacl -m u:qemu:rwx /var/log/audit/splunk-expansion
+setfacl -m u:qemu:rwx /var/log/audit
+setfacl -m u:qemu:rwx /var/log
+setfacl -m u:qemu:rwx /var
+qemu-img create /var/log/audit/kutlprdsplunk01-expansion 150G
+virsh attach-disk kutlprdsplunk01 \
+--source /var/log/audit/splunk-expansion/kutlprdsplunk01-expansion \
+--target vdb \
+--persistent
+ln -s /var/log/audit/splunk-expansion /splunk-expansion

@@ -443,7 +443,7 @@ install() {
             mkdir "$HOME_ROOT/splunk"
             touch "$HOME_ROOT/splunk/$PROFILE"
             (
-                echo "export PATH=/usr/bin:/usr/sbin:/opt/splunkforwarder/bin"
+                echo "export PATH=/usr/bin:/usr/sbin:/opt/splunk/bin"
                 echo "if [ -f /usr/bin/less ]; then"
                 echo '    export PAGER="/usr/bin/less -ins"'
                 echo "elif [ -f /usr/bin/more ]; then"
